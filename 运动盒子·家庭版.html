@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1024">
+<title>AI运动盒子 · 居家版交互原型 v6.0</title>
+<style>
+:root {
+  --primary: #4fc3f7;
+  --primary-dark: #0078ff;
+  --accent: #00e5cc;
+  --accent2: #ff6ec7;
+  --gold: #ffd700;
+  --bg: #0c1117;
+  --bg2: #111927;
+  --bg3: #172232;
+  --card: rgba(255,255,255,0.04);
+  --border: rgba(255,255,255,0.07);
+  --text: #ffffff;
+  --text2: rgba(255,255,255,0.55);
+  --text3: rgba(255,255,255,0.3);
+  --success: #00c853;
+  --warning: #ffab00;
+  --error: #ff1744;
+  --pk-a: #4fc3f7;
+  --pk-b: #ff6ec7;
+  --pk-c: #7ed321;
+  --pk-d: #ffab00;
+  --fairy: #a78bfa;
+  --fairy-glow: rgba(167,139,250,0.25);
+  --fairy-bg: rgba(167,139,250,0.08);
+  --box-accent: #38bdf8;
+  --box-bg: #0a0f1a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'PingFang SC','Microsoft YaHei',sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; user-select: none; }
+.prototype-shell { display: flex; min-height: 100vh; }
+.flow-nav { width: 260px; min-width: 260px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 100; }
+.flow-nav .brand { padding: 0 18px 16px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+.flow-nav .brand a { color: var(--text2); text-decoration: none; font-size: 10px; display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+.flow-nav .brand h3 { font-size: 13px; color: var(--box-accent); }
+.flow-nav .brand p { font-size: 10px; color: var(--text3); margin-top: 2px; }
+.flow-nav .brand .ver { font-size: 9px; background: linear-gradient(90deg,var(--fairy),var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top: 4px; font-weight: 700; }
+.nav-section-title { padding: 4px 18px 6px; font-size: 9px; letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 18px; font-size: 11px; color: var(--text2); cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; text-decoration: none; }
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.nav-item.active { color: var(--box-accent); border-left-color: var(--box-accent); background: rgba(56,189,248,0.07); }
+.ni-new { margin-left: auto; font-size: 9px; padding: 2px 7px; border-radius: 8px; background: rgba(167,139,250,0.15); color: var(--fairy); }
+.ni-core { margin-left: auto; font-size: 9px; padding: 2px 7px; border-radius: 8px; background: rgba(0,229,204,0.15); color: var(--accent); }
+.main-area { flex: 1; overflow-y: auto; }
+.screen-block { display: none; flex-direction: column; min-height: 100vh; }
+.screen-block.active { display: flex; }
+.screen-header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.screen-header h2 { font-size: 15px; font-weight: 600; }
+.screen-header p { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.screen-id { font-size: 9px; padding: 3px 10px; border: 1px solid var(--border); border-radius: 16px; color: var(--text3); letter-spacing: 1px; }
+.screen-content { flex: 1; padding: 28px 32px; }
+.device-frame { max-width: 1000px; margin: 0 auto; background: #0a0f1a; border: 2px solid rgba(255,255,255,0.1); border-radius: 14px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.device-chrome { background: #060d18; padding: 8px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.device-chrome .dc-dots { display: flex; gap: 5px; }
+.device-chrome .dc-dot { width: 7px; height: 7px; border-radius: 50%; }
+.device-chrome .dc-dot:nth-child(1) { background: #ff5f57; }
+.device-chrome .dc-dot:nth-child(2) { background: #febc2e; }
+.device-chrome .dc-dot:nth-child(3) { background: #28c840; }
+.dc-label { font-size: 9px; color: var(--text3); }
+.dc-fairy-status { display: flex; align-items: center; gap: 6px; font-size: 9px; padding: 2px 10px; border-radius: 8px; background: var(--fairy-bg); border: 1px solid rgba(167,139,250,0.2); }
+.dc-fairy-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--fairy); animation: fairyBlink 2s infinite; }
+@keyframes fairyBlink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+.device-screen { min-height: 560px; position: relative; overflow: hidden; }
+.label-tag { font-size: 9px; padding: 2px 8px; border-radius: 8px; font-weight: 600; display: inline-block; }
+.label-tag.blue { background: rgba(79,195,247,0.15); color: var(--primary); }
+.label-tag.green { background: rgba(0,200,83,0.15); color: var(--success); }
+.label-tag.orange { background: rgba(255,171,0,0.15); color: var(--warning); }
+.label-tag.pink { background: rgba(255,110,199,0.15); color: var(--accent2); }
+.label-tag.cyan { background: rgba(0,229,204,0.15); color: var(--accent); }
+.label-tag.fairy { background: rgba(167,139,250,0.15); color: var(--fairy); }
+.v1-tag { display:inline-block; font-size:8px; padding:1px 7px; border-radius:6px; background:rgba(167,139,250,0.18); color:var(--fairy); margin-left:6px; vertical-align:middle; }
+.v2-tag { display:inline-block; font-size:8px; padding:1px 7px; border-radius:6px; background:rgba(0,229,204,0.18); color:var(--accent); margin-left:6px; vertical-align:middle; }
+.v3-tag { display:inline-block; font-size:8px; padding:1px 7px; border-radius:6px; background:rgba(255,171,0,0.18); color:var(--warning); margin-left:6px; vertical-align:middle; }
+.h7-panel { animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+.screen-notes { max-width: 1000px; margin: 20px auto 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.screen-notes.triple { grid-template-columns: 1fr 1fr 1fr; }
+.note-block { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; }
+.note-block h4 { font-size: 11px; font-weight: 600; color: var(--accent); margin-bottom: 6px; }
+.note-block ul { padding-left: 16px; }
+.note-block li { font-size: 10px; color: var(--text2); line-height: 1.8; }
+.note-block .demo-link { color: var(--primary); cursor: pointer; text-decoration: underline; }
+.note-block.fairy-note h4 { color: var(--fairy); }
+
+/* ===== FAIRY BAR ===== */
+.fairy-bar { position: absolute; top: 0; left: 0; right: 0; height: 32px; background: rgba(10,15,26,0.92); border-bottom: 1px solid rgba(167,139,250,0.15); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 60; }
+.fairy-bar .fb-left { display: flex; align-items: center; gap: 10px; }
+.fairy-bar .fb-icon { font-size: 14px; }
+.fairy-bar .fb-name { font-size: 10px; color: var(--fairy); font-weight: 600; }
+.fairy-bar .fb-hr { font-size: 10px; color: var(--text2); }
+.fairy-bar .fb-hr span { color: var(--error); font-weight: 700; }
+.fairy-bar .fb-battery { font-size: 9px; color: var(--text3); display: flex; align-items: center; gap: 3px; }
+.fairy-bar .fb-actions { display: flex; gap: 12px; font-size: 9px; color: var(--text3); }
+.fairy-bar .fb-action { display: flex; align-items: center; gap: 3px; }
+.fairy-bar .fb-action kbd { font-size: 8px; padding: 1px 4px; border-radius: 3px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text2); font-family: inherit; }
+
+/* ===== QR ZONE ===== */
+.qr-zone { background: rgba(255,255,255,0.95); border-radius: 8px; padding: 10px; display: inline-flex; flex-direction: column; align-items: center; gap: 4px; }
+.qr-placeholder { width: 100px; height: 100px; background: #fff; display: flex; align-items: center; justify-content: center; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 10px; color: #999; text-align: center; line-height: 1.4; }
+.qr-label { font-size: 9px; color: #666; }
+
+/* ===== H0: BOOT ===== */
+.s-boot { background: radial-gradient(ellipse at 50% 40%, #0f1a33 0%, var(--box-bg) 100%); min-height: 560px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; gap: 20px; position: relative; overflow: hidden; }
+.s-boot::before { content:''; position:absolute; width:400px; height:400px; border-radius:50%; background:radial-gradient(circle,rgba(56,189,248,0.08)0%,transparent 70%); top:-100px; right:-100px; }
+.s-boot::after { content:''; position:absolute; width:300px; height:300px; border-radius:50%; background:radial-gradient(circle,rgba(167,139,250,0.06)0%,transparent 70%); bottom:-80px; left:-80px; }
+.boot-logo { font-size: 48px; animation: bootPulse 2s ease-in-out infinite; }
+@keyframes bootPulse { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.05);opacity:0.85;} }
+.boot-title { font-size: 22px; font-weight: 300; letter-spacing: 4px; background: linear-gradient(90deg, var(--box-accent), var(--fairy)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.boot-subtitle { font-size: 12px; color: var(--text3); letter-spacing: 2px; }
+.boot-checklist { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; z-index: 1; }
+.boot-check-item { display: flex; align-items: center; gap: 12px; padding: 10px 20px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); font-size: 12px; min-width: 320px; }
+.boot-check-item .bci-icon { font-size: 18px; }
+.boot-check-item .bci-label { flex: 1; }
+.boot-check-item .bci-status { font-size: 10px; font-weight: 600; }
+.boot-check-item.ok { border-color: rgba(0,200,83,0.3); }
+.boot-check-item.ok .bci-status { color: var(--success); }
+.boot-check-item.loading { border-color: rgba(79,195,247,0.3); }
+.boot-check-item.loading .bci-status { color: var(--primary); }
+.boot-check-item.warn { border-color: rgba(255,171,0,0.3); }
+.boot-check-item.warn .bci-status { color: var(--warning); }
+.boot-action { margin-top: 12px; padding: 12px 36px; border-radius: 12px; background: linear-gradient(135deg, var(--box-accent), var(--fairy)); color: #000; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; z-index: 1; }
+.boot-action:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(56,189,248,0.3); }
+.boot-skip { font-size: 10px; color: var(--text3); margin-top: 6px; cursor: pointer; z-index: 1; }
+
+/* ===== H0b: FAIRY PAIR ===== */
+.s-fairy-pair { background: radial-gradient(ellipse at 50% 30%, #1a1040 0%, var(--box-bg) 100%); min-height: 560px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; gap: 16px; position: relative; }
+.fairy-pair-hero { display: flex; align-items: center; gap: 30px; width: 100%; max-width: 700px; }
+.fairy-pair-visual { flex: 0 0 200px; height: 200px; background: radial-gradient(circle, var(--fairy-glow) 0%, transparent 70%); border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; }
+.fairy-device-icon { font-size: 64px; animation: fairyFloat 3s ease-in-out infinite; }
+@keyframes fairyFloat { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+.fairy-pair-ring { position: absolute; inset: -8px; border: 2px dashed rgba(167,139,250,0.3); border-radius: 50%; animation: fairyRingRotate 8s linear infinite; }
+@keyframes fairyRingRotate { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+.fairy-pair-info { flex: 1; }
+.fairy-pair-info .fpi-name { font-size: 18px; font-weight: 700; color: var(--fairy); margin-bottom: 6px; }
+.fairy-pair-info .fpi-desc { font-size: 11px; color: var(--text2); line-height: 1.8; margin-bottom: 12px; }
+.fairy-feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fairy-feature-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; background: rgba(167,139,250,0.06); border: 1px solid rgba(167,139,250,0.12); font-size: 10px; color: var(--text2); }
+.fairy-feature-item .ffi-icon { font-size: 16px; }
+.fairy-pair-steps { width: 100%; max-width: 700px; margin-top: 10px; }
+.fairy-step { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); margin-bottom: 8px; }
+.fairy-step .fs-num { width: 24px; height: 24px; border-radius: 50%; background: var(--fairy-bg); border: 1px solid rgba(167,139,250,0.3); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--fairy); }
+.fairy-step .fs-text { font-size: 11px; color: var(--text2); flex: 1; }
+.fairy-step .fs-text strong { color: var(--text); }
+.fairy-step .fs-status { font-size: 10px; }
+.fairy-step.done { border-color: rgba(0,200,83,0.3); }
+.fairy-step.done .fs-status { color: var(--success); }
+.fairy-step.active { border-color: rgba(167,139,250,0.4); }
+.fairy-step.active .fs-status { color: var(--fairy); }
+.fairy-skip-btn { font-size: 11px; color: var(--text3); margin-top: 8px; cursor: pointer; }
+
+/* ===== H1: STANDBY ===== */
+.s-standby { background: radial-gradient(ellipse at 50% 30%, #0f1b33 0%, var(--box-bg) 100%); min-height: 560px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; position: relative; overflow: hidden; }
+.s-standby::before { content:''; position:absolute; width:300px; height:300px; border-radius:50%; background:radial-gradient(circle,rgba(167,139,250,0.05)0%,transparent 70%); top:-80px; right:-60px; }
+.s-standby::after { content:''; position:absolute; width:260px; height:260px; border-radius:50%; background:radial-gradient(circle,rgba(56,189,248,0.06)0%,transparent 70%); bottom:-80px; left:-60px; }
+.standby-center { text-align:center; z-index:1; }
+.standby-center .home-label { font-size:11px; color:var(--text3); letter-spacing:3px; margin-bottom:6px; }
+.standby-center .app-title { font-size:20px; font-weight:300; letter-spacing:4px; background:linear-gradient(90deg,var(--box-accent),var(--fairy)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:4px; }
+.standby-center .sport-badge { font-size:11px; color:var(--accent); letter-spacing:2px; margin-bottom:18px; }
+.standby-time { font-size:64px; font-weight:200; letter-spacing:-1px; font-variant-numeric:tabular-nums; }
+.standby-date { font-size:13px; color:var(--text2); margin-top:4px; letter-spacing:1px; }
+.standby-entries { display:flex; gap:24px; margin-top:32px; z-index:1; flex-wrap: wrap; justify-content: center; }
+.entry-zone { display:flex; flex-direction:column; align-items:center; gap:8px; padding:16px 24px; border-radius:16px; cursor:pointer; transition:all 0.3s; position:relative; }
+.entry-zone.training { background:rgba(56,189,248,0.05); border:1.5px solid rgba(56,189,248,0.2); }
+.entry-zone.training:hover { background:rgba(56,189,248,0.1); border-color:var(--box-accent); }
+.entry-zone.data-view { background:rgba(0,229,204,0.05); border:1.5px solid rgba(0,229,204,0.2); }
+.entry-zone.data-view:hover { background:rgba(0,229,204,0.1); border-color:var(--accent); }
+.entry-zone.qr-login { background:var(--fairy-bg); border:1.5px solid rgba(167,139,250,0.2); }
+.entry-zone.qr-login:hover { background:rgba(167,139,250,0.12); border-color:var(--fairy); }
+.ez-icon { font-size:28px; }
+.ez-title { font-size:13px; font-weight:600; }
+.ez-desc { font-size:10px; color:var(--text2); text-align:center; line-height:1.6; }
+.ez-tag { font-size:9px; padding:2px 10px; border-radius:10px; background:rgba(255,255,255,0.06); color:var(--text3); }
+.cam-status { display:flex; align-items:center; gap:6px; font-size:10px; color:var(--text3); margin-top:20px; z-index:1; }
+.cam-dot { width:6px; height:6px; border-radius:50%; background:var(--success); animation:camBlink 2s infinite; }
+@keyframes camBlink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+.standby-qr-corner { position:absolute; bottom:16px; right:16px; z-index:2; display:flex; align-items:center; gap:10px; background:rgba(0,0,0,0.5); border:1px solid var(--border); border-radius:12px; padding:8px 12px; }
+.sqr-info { text-align: right; }
+.sqr-label { font-size: 9px; color: var(--text3); }
+.sqr-hint { font-size: 10px; color: var(--text2); }
+.standby-idle-bar { position:absolute; bottom:0; left:0; right:0; height:2px; background:rgba(255,171,0,0.15); }
+.standby-idle-fill { height:100%; background:var(--warning); transition:width 0.5s; animation:idleDrain 300s linear forwards; }
+@keyframes idleDrain { from{width:100%;} to{width:0%;} }
+
+/* ===== H2: USER RECOG ===== */
+.s-user-recog { min-height:560px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; gap:16px; text-align:center; position:relative; }
+.face-scan-area { width:140px; height:140px; border:2px solid rgba(56,189,248,0.3); border-radius:16px; display:flex; align-items:center; justify-content:center; position:relative; animation:scanPulse 2s infinite; }
+@keyframes scanPulse { 0%,100%{box-shadow:0 0 0 0 rgba(56,189,248,0.2);} 50%{box-shadow:0 0 0 16px rgba(56,189,248,0);} }
+.face-scan-area .fa-icon { font-size:56px; }
+.face-recog-msg { font-size:17px; font-weight:500; text-align:center; }
+.face-recog-sub { font-size:11px; color:var(--text2); text-align:center; line-height:1.7; }
+.face-recog-dots { display:flex; gap:8px; margin-top:4px; }
+.frd { width:8px; height:8px; border-radius:50%; background:rgba(56,189,248,0.3); animation:dotPulse 1.2s infinite; }
+.frd:nth-child(2){ animation-delay:0.4s; } .frd:nth-child(3){ animation-delay:0.8s; }
+@keyframes dotPulse { 0%,100%{background:rgba(56,189,248,0.2);} 50%{background:var(--box-accent);} }
+.recog-success { display:none; flex-direction:column; align-items:center; gap:8px; text-align:center; }
+.recog-success.show { display:flex; }
+.rs-check { font-size:48px; }
+.rs-name { font-size:24px; font-weight:700; color:var(--success); }
+.rs-class { font-size:11px; color:var(--text2); }
+.rs-auto { font-size:11px; color:var(--box-accent); }
+.recog-fail { display:none; flex-direction:column; align-items:center; gap:8px; background:rgba(255,23,68,0.05); border:1px solid rgba(255,23,68,0.2); border-radius:12px; padding:20px 32px; }
+.recog-fail.show { display:flex; }
+.recog-fail .rf-icon { font-size:40px; }
+.recog-fail .rf-msg { font-size:16px; color:var(--error); font-weight:600; }
+.recog-fail .rf-sub { font-size:11px; color:var(--text2); text-align:center; line-height:1.6; }
+.qr-login-alt { position: absolute; bottom: 20px; right: 20px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
+.qr-login-alt .qla-qr { background: #fff; border-radius: 6px; padding: 6px; }
+.qr-login-alt .qla-qr-inner { width: 72px; height: 72px; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; text-align: center; line-height: 1.3; }
+.qr-login-alt .qla-text { display: flex; flex-direction: column; gap: 3px; }
+.qr-login-alt .qla-title { font-size: 11px; color: var(--fairy); font-weight: 600; }
+.qr-login-alt .qla-desc { font-size: 9px; color: var(--text3); line-height: 1.5; }
+.route-hint { display:none; margin-top:8px; font-size:11px; padding:8px 16px; border-radius:10px; }
+.route-hint.cold { display:flex; background:rgba(126,211,33,0.08); border:1px solid rgba(126,211,33,0.25); color:var(--pk-c); align-items:center; gap:6px; }
+.route-hint.returning { display:flex; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); color:var(--box-accent); align-items:center; gap:6px; }
+
+/* ===== H_COLD ===== */
+.s-cold { min-height:560px; background: radial-gradient(ellipse at 30% 50%, #0a1a35 0%, var(--box-bg) 100%); display:flex; flex-direction:column; position:relative; overflow:hidden; }
+.cold-progress-bar { display:flex; align-items:center; justify-content:center; gap:0; padding:16px 24px 8px; z-index:1; position:relative; }
+.cpb-step { display:flex; flex-direction:column; align-items:center; gap:5px; z-index:1; }
+.cpb-step .cpb-dot { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; border:2px solid var(--border); color:var(--text3); background:rgba(255,255,255,0.02); transition:all 0.35s; }
+.cpb-step span { font-size:8px; color:var(--text3); white-space:nowrap; transition:color 0.35s; }
+.cpb-step.active .cpb-dot { border-color:var(--box-accent); background:rgba(56,189,248,0.15); color:var(--box-accent); box-shadow:0 0 16px rgba(56,189,248,0.25); }
+.cpb-step.active span { color:var(--box-accent); }
+.cpb-step.done .cpb-dot { border-color:var(--success); background:var(--success); color:#000; }
+.cpb-step.done span { color:var(--success); }
+.cpb-connector { width:36px; height:2px; background:var(--border); margin:0 -2px; position:relative; top:-8px; transition:background 0.35s; }
+.cpb-connector.done { background:var(--success); }
+.cold-body { flex:1; display:flex; gap:20px; padding:20px 24px; z-index:1; position:relative; align-items:stretch; }
+.cold-viz-panel { flex:0 0 300px; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; position:relative; overflow:hidden; }
+.cold-viz-panel::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 50% 40%, rgba(56,189,248,0.06) 0%, transparent 60%); z-index:0; }
+.cold-viz-label { font-size:9px; color:var(--text3); letter-spacing:1.5px; z-index:1; position:relative; }
+.cold-viz-skeleton { position:relative; width:140px; height:200px; z-index:1; }
+.cvs-head { width:32px; height:32px; border-radius:50%; border:2px solid var(--box-accent); position:absolute; top:0; left:50%; transform:translateX(-50%); }
+.cvs-torso { width:2px; height:64px; background:linear-gradient(180deg,var(--box-accent),var(--accent)); position:absolute; top:30px; left:50%; transform:translateX(-50%); }
+.cvs-arm-l, .cvs-arm-r { width:2px; height:50px; position:absolute; top:36px; }
+.cvs-arm-l { left:calc(50% - 22px); transform:rotate(15deg); background:var(--accent); }
+.cvs-arm-r { left:calc(50% + 20px); transform:rotate(-15deg); background:var(--accent); }
+.cvs-leg-l, .cvs-leg-r { width:2px; height:60px; position:absolute; top:92px; }
+.cvs-leg-l { left:calc(50% - 8px); background:var(--box-accent); }
+.cvs-leg-r { left:calc(50% + 6px); background:var(--box-accent); }
+.cold-viz-status { font-size:10px; color:var(--text3); z-index:1; position:relative; }
+.cold-right-panel { flex:1; display:flex; flex-direction:column; gap:12px; }
+.cold-step-block { background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:12px; padding:16px 18px; display:flex; flex-direction:column; gap:8px; }
+.cold-step-block.hidden { display:none; }
+.cold-step-icon { font-size:24px; }
+.cold-step-title { font-size:14px; font-weight:600; }
+.cold-step-desc { font-size:11px; color:var(--text2); line-height:1.7; }
+.cold-btn-row { display:flex; gap:10px; margin-top:4px; }
+.cold-btn { padding:10px 20px; border-radius:12px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; border:none; }
+.cold-btn.primary { background:linear-gradient(135deg,var(--box-accent),var(--fairy)); color:#000; }
+.cold-btn.primary:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(56,189,248,0.25); }
+.cold-btn.secondary { background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text2); }
+.cold-skip { font-size:10px; color:var(--text3); cursor:pointer; margin-top:2px; }
+
+/* ===== H3: HALL ===== */
+.s-hall { min-height:560px; background:radial-gradient(ellipse at 50% 30%, #0f1b33 0%, var(--box-bg) 100%); display:flex; flex-direction:column; position:relative; overflow:hidden; }
+.hall-top { display:flex; align-items:center; justify-content:space-between; padding:14px 24px 0; z-index:1; }
+.hall-user { display:flex; align-items:center; gap:10px; }
+.hall-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--box-accent),var(--fairy)); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; }
+.hall-user-info .hui-name { font-size:13px; font-weight:600; }
+.hall-user-info .hui-desc { font-size:9px; color:var(--text3); }
+.hall-mode-title { font-size:11px; color:var(--text3); text-align:center; padding:6px 0; letter-spacing:1px; }
+.hall-modes { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; padding:10px 24px; max-width:760px; margin:0 auto; }
+.mode-card { background:var(--bg3); border:2px solid var(--border); border-radius:14px; padding:20px 12px; text-align:center; cursor:pointer; transition:all 0.25s; display:flex; flex-direction:column; align-items:center; gap:6px; position:relative; }
+.mode-card:hover { border-color:var(--box-accent); box-shadow:0 8px 32px rgba(56,189,248,0.12); transform:translateY(-4px); }
+.mode-card.selected { border-color:var(--box-accent); background:rgba(56,189,248,0.06); }
+.mode-card .mc-icon { font-size:32px; }
+.mode-card .mc-name { font-size:13px; font-weight:600; }
+.mode-card .mc-desc { font-size:9px; color:var(--text3); line-height:1.4; }
+.mode-card .mc-tag { font-size:9px; margin-top:2px; }
+.hall-extend-hint { margin: 12px auto 0; max-width: 760px; background: rgba(255,255,255,0.02); border: 1px dashed var(--border); border-radius: 10px; padding: 10px 16px; display: flex; align-items: center; gap: 10px; justify-content: center; }
+.hall-extend-hint .heh-icon { font-size: 16px; }
+.hall-extend-hint .heh-text { font-size: 10px; color: var(--text3); }
+.hall-extend-hint .heh-text strong { color: var(--text2); }
+.hall-bottom { padding:10px 24px 16px; z-index:1; }
+.hall-gesture-hint { font-size:10px; color:var(--text3); text-align:center; margin-bottom:4px; }
+.hall-idle-indicator { height:3px; background:rgba(255,255,255,0.05); border-radius:2px; margin-top:8px; }
+.hall-idle-fill { height:100%; background:var(--warning); border-radius:2px; animation:idleDrain 60s linear forwards; }
+
+/* ===== H4a/b/c: PREP ===== */
+.s-prep { min-height:560px; background:radial-gradient(ellipse at 50% 30%, #0f1b33 0%, var(--box-bg) 100%); display:flex; flex-direction:column; position:relative; overflow:hidden; }
+.prep-top-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); background:rgba(0,0,0,0.3); padding:0 16px; }
+.prep-top-tab { padding:10px 18px; font-size:11px; color:var(--text3); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; }
+.prep-top-tab:hover { color:var(--text2); }
+.prep-top-tab.active { color:var(--box-accent); border-bottom-color:var(--box-accent); }
+.prep-mode-tag { display:inline-block; padding:4px 14px; border-radius:20px; font-size:10px; font-weight:600; margin:16px 24px 8px; }
+.prep-mode-tag.free { background:rgba(56,189,248,0.1); color:var(--box-accent); }
+.prep-mode-tag.course { background:rgba(0,229,204,0.1); color:var(--accent); }
+.prep-mode-tag.exam { background:rgba(255,171,0,0.1); color:var(--warning); }
+.prep-msg { font-size:11px; color:var(--text2); margin:0 24px 16px; }
+.prep-body { flex:1; display:flex; gap:20px; padding:0 24px; }
+.prep-fairy-check { flex:0 0 240px; background:rgba(167,139,250,0.04); border:1px solid rgba(167,139,250,0.15); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:12px; }
+.pfc-title { font-size:12px; color:var(--fairy); font-weight:600; display:flex; align-items:center; gap:6px; }
+.pfc-item { display:flex; align-items:center; gap:8px; font-size:10px; color:var(--text2); }
+.pfc-item .pfc-dot { width:8px; height:8px; border-radius:50%; }
+.pfc-item.ok .pfc-dot { background:var(--success); }
+.pfc-item .pfc-label { flex:1; }
+.pfc-item .pfc-val { color:var(--text3); }
+.pfc-hint { font-size:9px; color:var(--text3); line-height:1.6; margin-top:4px; }
+.prep-target-panel { flex:1; display:flex; flex-direction:column; gap:12px; }
+.target-option { background:rgba(255,255,255,0.02); border:2px solid var(--border); border-radius:12px; padding:14px 16px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:12px; }
+.target-option:hover { border-color:rgba(56,189,248,0.3); }
+.target-option.selected { border-color:var(--box-accent); background:rgba(56,189,248,0.06); }
+.target-option .to-icon { font-size:20px; }
+.target-option .to-info { flex:1; }
+.target-option .to-name { font-size:12px; font-weight:600; }
+.target-option .to-desc { font-size:9px; color:var(--text3); }
+.target-option .to-check { font-size:14px; color:var(--box-accent); display:none; }
+.target-option.selected .to-check { display:block; }
+.prep-actions { padding:16px 24px; display:flex; gap:10px; justify-content:flex-end; }
+
+/* ===== H5: TRAINING ===== */
+.s-training { min-height:560px; background:var(--box-bg); display:flex; flex-direction:column; position:relative; }
+.training-top { display:flex; align-items:center; justify-content:space-between; padding:8px 20px; background:rgba(0,0,0,0.3); border-bottom:1px solid var(--border); }
+.tt-left { display:flex; align-items:center; gap:10px; }
+.tt-mode { font-size:10px; padding:3px 10px; border-radius:8px; background:rgba(56,189,248,0.1); color:var(--box-accent); }
+.tt-timer { font-size:20px; font-weight:200; font-variant-numeric:tabular-nums; letter-spacing:1px; }
+.tt-right { display:flex; align-items:center; gap:12px; }
+.tt-hr { font-size:10px; color:var(--text2); display:flex; align-items:center; gap:4px; }
+.tt-hr .tt-hr-val { font-size:14px; font-weight:700; color:var(--error); }
+.tt-fairy { font-size:9px; padding:2px 8px; border-radius:8px; background:var(--fairy-bg); border:1px solid rgba(167,139,250,0.2); color:var(--fairy); display:flex; align-items:center; gap:4px; }
+.tt-pause { font-size:10px; padding:4px 10px; border-radius:8px; border:1px solid var(--border); color:var(--text3); cursor:pointer; }
+.training-body { flex:1; display:flex; position:relative; }
+.training-canvas { flex:1; position:relative; display:flex; align-items:center; justify-content:center; }
+.training-skeleton { position:relative; width:200px; height:280px; }
+.ts-head { width:36px; height:36px; border-radius:50%; border:2px solid var(--box-accent); position:absolute; top:20px; left:50%; transform:translateX(-50%); }
+.ts-torso { width:2px; height:70px; background:linear-gradient(180deg,var(--box-accent),var(--accent)); position:absolute; top:54px; left:50%; transform:translateX(-50%); }
+.ts-arm-l, .ts-arm-r { width:2px; height:55px; position:absolute; top:60px; }
+.ts-arm-l { left:calc(50% - 26px); transform:rotate(10deg); background:var(--accent); }
+.ts-arm-r { left:calc(50% + 24px); transform:rotate(-10deg); background:var(--accent); }
+.ts-fairy-l, .ts-fairy-r { width:10px; height:10px; border-radius:50%; position:absolute; }
+.ts-fairy-l { top:55px; left:calc(50% - 30px); background:var(--fairy); box-shadow:0 0 8px var(--fairy-glow); animation: fairyGlow 1.5s infinite; }
+.ts-fairy-r { top:55px; left:calc(50% + 20px); background:var(--fairy); box-shadow:0 0 8px var(--fairy-glow); animation: fairyGlow 1.5s infinite 0.5s; }
+@keyframes fairyGlow { 0%,100%{opacity:1;box-shadow:0 0 8px var(--fairy-glow);} 50%{opacity:0.6;box-shadow:0 0 16px var(--fairy-glow);} }
+.ts-leg-l, .ts-leg-r { width:2px; height:60px; position:absolute; top:122px; }
+.ts-leg-l { left:calc(50% - 8px); background:var(--box-accent); transform:rotate(70deg); transform-origin:top center; }
+.ts-leg-r { left:calc(50% + 6px); background:var(--box-accent); transform:rotate(-70deg); transform-origin:top center; }
+.ts-angle-arc { position:absolute; top:50px; left:calc(50% + 20px); width:30px; height:30px; border:1px dashed var(--accent); border-radius:0 50% 0 0; }
+.ts-angle-label { position:absolute; top:42px; left:calc(50% + 56px); font-size:9px; color:var(--accent); font-weight:600; }
+.training-count { position:absolute; right:30px; top:50%; transform:translateY(-50%); text-align:center; z-index:2; }
+.tc-number { font-size:72px; font-weight:200; color:var(--box-accent); line-height:1; }
+.tc-label { font-size:11px; color:var(--text3); margin-top:4px; }
+.tc-quality { display:flex; gap:3px; justify-content:center; margin-top:8px; }
+.tc-qdot { width:8px; height:8px; border-radius:50%; }
+.tc-qdot.good { background:var(--success); }
+.tc-qdot.bad { background:var(--error); }
+.training-feedback { position:absolute; left:16px; bottom:60px; z-index:2; display:flex; flex-direction:column; gap:6px; max-width:260px; }
+.tf-item { padding:8px 14px; border-radius:10px; background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); font-size:11px; line-height:1.5; border-left:3px solid; }
+.tf-item.correct { border-left-color:var(--success); }
+.tf-item.correct .tf-msg { color:var(--success); }
+.tf-item.warning { border-left-color:var(--warning); }
+.tf-item.warning .tf-msg { color:var(--warning); }
+.tf-item .tf-source { font-size:8px; color:var(--fairy); margin-left:4px; }
+.pause-overlay { position:absolute; inset:0; background:rgba(7,13,23,0.85); display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; z-index:80; }
+.pause-overlay.show { display:flex; }
+.pause-overlay .po-icon { font-size:56px; }
+.pause-overlay .po-title { font-size:22px; font-weight:600; }
+.pause-overlay .po-hint { font-size:12px; color:var(--text2); }
+.pause-overlay .po-actions { display:flex; gap:12px; margin-top:8px; }
+.pause-overlay .po-btn { padding:10px 24px; border-radius:12px; font-size:12px; font-weight:600; cursor:pointer; border:none; }
+.pause-overlay .po-btn.resume { background:linear-gradient(135deg,var(--box-accent),var(--fairy)); color:#000; }
+.pause-overlay .po-btn.end { background:rgba(255,23,68,0.1); border:1px solid rgba(255,23,68,0.3); color:var(--error); }
+.training-bottom { padding:10px 20px; background:rgba(0,0,0,0.3); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.tb-gesture { font-size:9px; color:var(--text3); display:flex; gap:16px; }
+.tb-gesture span { display:flex; align-items:center; gap:4px; }
+.tb-fairy-hint { font-size:9px; color:var(--fairy); display:flex; align-items:center; gap:4px; }
+
+/* ===== H6: REPORT ===== */
+.s-report { min-height:560px; background:radial-gradient(ellipse at 50% 25%, #0f1b33 0%, var(--box-bg) 100%); display:flex; flex-direction:column; padding:20px; gap:16px; }
+.report-header { text-align:center; }
+.report-header .rh-icon { font-size:36px; }
+.report-header .rh-title { font-size:18px; font-weight:300; letter-spacing:2px; background:linear-gradient(90deg,var(--box-accent),var(--fairy)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.report-core-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.report-metric { background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:12px; padding:14px; text-align:center; }
+.report-metric .rm-value { font-size:28px; font-weight:200; }
+.report-metric .rm-value.blue { color:var(--box-accent); }
+.report-metric .rm-value.green { color:var(--success); }
+.report-metric .rm-value.orange { color:var(--warning); }
+.report-metric .rm-label { font-size:10px; color:var(--text3); margin-top:4px; }
+.report-detail { display:flex; gap:12px; flex:1; }
+.report-quality { flex:1; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:12px; padding:14px; }
+.rq-title { font-size:11px; color:var(--text2); margin-bottom:8px; font-weight:600; }
+.rq-bar-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.rq-bar-label { font-size:10px; color:var(--text3); width:60px; }
+.rq-bar-track { flex:1; height:6px; background:rgba(255,255,255,0.06); border-radius:3px; }
+.rq-bar-fill { height:100%; border-radius:3px; }
+.rq-bar-fill.good { background:var(--success); }
+.rq-bar-fill.warn { background:var(--warning); }
+.rq-bar-fill.bad { background:var(--error); }
+.rq-bar-pct { font-size:9px; color:var(--text3); width:30px; text-align:right; }
+.report-ai { flex:1; background:rgba(167,139,250,0.04); border:1px solid rgba(167,139,250,0.15); border-radius:12px; padding:14px; }
+.report-ai .rai-title { font-size:11px; color:var(--fairy); font-weight:600; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+.report-ai .rai-item { font-size:10px; color:var(--text2); line-height:1.7; padding-left:12px; border-left:2px solid rgba(167,139,250,0.2); margin-bottom:6px; }
+.report-actions { display:flex; gap:10px; justify-content:center; padding-top:8px; }
+.rav-btn { padding:10px 24px; border-radius:12px; font-size:12px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; }
+.rav-btn.primary { background:linear-gradient(135deg,var(--box-accent),var(--fairy)); color:#000; }
+.rav-btn.secondary { background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text2); }
+.rav-btn.share { background:rgba(0,229,204,0.1); border:1px solid rgba(0,229,204,0.2); color:var(--accent); }
+
+/* ===== H7: DATA ===== */
+.s-data { min-height:560px; background:var(--box-bg); display:flex; flex-direction:column; }
+.data-top { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; border-bottom:1px solid var(--border); }
+.dc-back { font-size:11px; color:var(--text3); cursor:pointer; }
+.dc-tabs { display:flex; gap:0; padding:0 20px; border-bottom:1px solid var(--border); }
+.dc-tab { padding:10px 16px; font-size:11px; color:var(--text3); cursor:pointer; border-bottom:2px solid transparent; }
+.dc-tab.active { color:var(--box-accent); border-bottom-color:var(--box-accent); }
+.data-body { flex:1; padding:16px 20px; }
+
+/* ===== HEART-RATE ALERT ===== */
+.hr-alert-bar { position:absolute; top:40px; left:50%; transform:translateX(-50%); background:linear-gradient(90deg, rgba(255,23,68,0.12), rgba(255,23,68,0.22)); border:1px solid rgba(255,23,68,0.4); border-radius:10px; padding:8px 16px; display:none; align-items:center; gap:10px; z-index:80; min-width:360px; animation:hrAlertPulse 1.5s infinite; }
+.hr-alert-bar.show { display:flex; }
+@keyframes hrAlertPulse { 0%,100%{opacity:1;} 50%{opacity:0.75;} }
+.hr-alert-bar .hra-icon { font-size:20px; }
+.hr-alert-bar .hra-text { flex:1; }
+.hr-alert-bar .hra-title { font-size:12px; font-weight:700; color:var(--error); }
+.hr-alert-bar .hra-sub { font-size:10px; color:var(--text2); }
+
+/* ===== GESTURE LEGEND ===== */
+.gesture-legend { max-width:1000px; margin:20px auto 0; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:10px; padding:14px 18px; }
+.gesture-legend h4 { font-size:11px; color:var(--accent); margin-bottom:10px; }
+.gesture-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.gg-item { display:flex; align-items:flex-start; gap:8px; padding:8px 10px; background:rgba(255,255,255,0.02); border-radius:8px; }
+.gg-icon { font-size:18px; flex-shrink:0; }
+.gg-label { display:flex; flex-direction:column; gap:2px; }
+.gg-label strong { font-size:10px; color:var(--text); }
+.gg-label span { font-size:9px; color:var(--text3); }
+.gg-item.fairy-gesture { border:1px solid rgba(167,139,250,0.1); background:var(--fairy-bg); }
+.gg-item.fairy-gesture .gg-label strong { color:var(--fairy); }
+
+/* ===== COMPARE TABLE ===== */
+.compare-section { max-width:1000px; margin:20px auto 0; }
+.compare-section h3 { font-size:13px; color:var(--box-accent); margin-bottom:12px; }
+.compare-table { width:100%; border-collapse:collapse; font-size:10px; }
+.compare-table th { background:rgba(255,255,255,0.04); color:var(--text3); font-weight:600; padding:8px 12px; text-align:left; border:1px solid var(--border); }
+.compare-table td { padding:8px 12px; border:1px solid var(--border); color:var(--text2); }
+.compare-table tr:hover td { background:rgba(255,255,255,0.02); }
+.compare-table .highlight { color:var(--fairy); font-weight:600; }
+
+.back-home { position:fixed; bottom:20px; right:20px; padding:8px 16px; background:var(--bg3); border:1px solid var(--border); border-radius:20px; color:var(--text2); text-decoration:none; font-size:11px; z-index:200; transition:all 0.2s; }
+.back-home:hover { border-color:var(--box-accent); color:var(--box-accent); }
+</style>
+</head>
+<body>
+
+<div class="prototype-shell">
+
+<!-- ===== LEFT NAV ===== -->
+<nav class="flow-nav">
+  <div class="brand">
+    <a href="#" onclick="switchScreen('h0');return false;">← 返回入口</a>
+    <h3>📺 AI运动盒子</h3>
+    <p>居家版 · 电视外接</p>
+    <div class="ver">▲ v6.0 · 体感精灵版</div>
+  </div>
+  <div class="nav-section-title">启动与配对</div>
+  <a class="nav-item active" href="#h0" onclick="switchScreen('h0')">H0 · 开机引导 <span class="ni-new">NEW</span></a>
+  <a class="nav-item" href="#h0b" onclick="switchScreen('h0b')">H0b · 体感精灵配对 <span class="ni-new">NEW</span></a>
+  <div class="nav-section-title">公共流程</div>
+  <a class="nav-item" href="#h1" onclick="switchScreen('h1')">H1 · 待机首页</a>
+  <a class="nav-item" href="#h2" onclick="switchScreen('h2')">H2 · 用户识别 <span class="ni-new">QR</span></a>
+  <a class="nav-item" href="#h_cold" onclick="switchScreen('h_cold')">H_COLD · 冷启动</a>
+  <a class="nav-item" href="#h3" onclick="switchScreen('h3')">H3 · 训练大厅</a>
+  <div class="nav-section-title">训练准备</div>
+  <a class="nav-item" href="#h4a" onclick="switchScreen('h4a')">H4a · 自由训练</a>
+  <a class="nav-item" href="#h4b" onclick="switchScreen('h4b')">H4b · 课程训练</a>
+  <a class="nav-item" href="#h4c" onclick="switchScreen('h4c')">H4c · 体测模拟</a>
+  <div class="nav-section-title">训练流程</div>
+  <a class="nav-item" href="#h5" onclick="switchScreen('h5')">H5 · 训练中 <span class="ni-core">核心</span></a>
+  <a class="nav-item" href="#h6" onclick="switchScreen('h6')">H6 · 即时报告</a>
+  <div class="nav-section-title">数据中心</div>
+  <a class="nav-item" href="#h7" onclick="switchScreen('h7')">H7 · 个人数据</a>
+  <div class="nav-section-title">v6.0 设计说明</div>
+  <div style="padding:0 18px;font-size:9px;color:var(--text3);line-height:1.9;">
+    <div>📡 WiFi扫码管理（无点击）</div>
+    <div>🚫 H0/COLD移除所有点击按钮</div>
+    <div>📱 KEEP风格手机同步选项目</div>
+    <div>🏋️ H3精简重复项目展示</div>
+    <div>📈 H7四Tab完整数据展示</div>
+    <div>🐉 我的宠物·成长曲线·校园数据</div>
+  </div>
+</nav>
+
+<div class="main-area">
+
+<!-- ===== H0: 开机引导 ===== -->
+<div class="screen-block active" id="h0">
+  <div class="screen-header">
+    <div><h2>H0 · 开机引导</h2><p>设备自检 · WiFi连接 · 体感精灵引导 <span class="v3-tag">v4修改</span></p></div>
+    <span class="screen-id">SCREEN-H0</span>
+  </div>
+  <div class="screen-content">
+    <div class="device-frame">
+      <div class="device-chrome">
+        <div class="dc-dots"><div class="dc-dot"></div><div class="dc-dot"></div><div class="dc-dot"></div></div>
+        <span class="dc-label">AI运动盒子 · 居家版 v6.0</span>
+        <div class="dc-fairy-status"><div class="dc-fairy-dot"></div>体感精灵 已连接</div>
+      </div>
+      <div class="device-screen">
+        <div class="s-boot">
+          <div class="boot-logo">📺</div>
+          <div class="boot-title">AI 运动盒子</div>
+          <div class="boot-subtitle">校园体育角 · 居家延伸</div>
+          <div class="boot-checklist">
+            <!-- v3修改：WiFi状态展示+扫码管理入口 -->
+            <div class="boot-check-item ok"><span class="bci-icon">📡</span><span class="bci-label">网络连接</span><span class="bci-status">✓ HomeWiFi_5G · 2分钟前</span></div>
+            <!-- WiFi管理二维码面板（常驻展示，无需点击）-->
+            <div style="margin:8px 0;padding:12px 14px;background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.18);border-radius:10px;display:flex;gap:12px;align-items:center;">
+              <div style="width:52px;height:52px;background:white;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#333;text-align:center;line-height:1.3;flex-shrink:0;">
+                <div style="font-size:18px;">📡</div>
+              </div>
+              <div style="flex:1;">
+                <div style="font-size:10px;color:var(--box-accent);font-weight:600;margin-bottom:3px;">📱 手机扫码配置WiFi</div>
+                <div style="font-size:9px;color:var(--text3);line-height:1.7;">
+                  当前：<strong style="color:var(--text2);">HomeWiFi_5G</strong><br>
+                  换网络 / 输入密码 → 手机扫码完成，自动同步到盒子
+                </div>
+              </div>
+            </div>
+            <div class="boot-check-item ok"><span class="bci-icon">📷</span><span class="bci-label">摄像头</span><span class="bci-status">✓ 已就绪</span></div>
+            <div class="boot-check-item loading"><span class="bci-icon">🧚</span><span class="bci-label">体感精灵</span><span class="bci-status">⏳ 搜索中...</span></div>
+          </div>
+          <!-- v3修改：配对体感精灵 - 展示动作说明，不依赖点击 -->
+          <div class="boot-action" style="pointer-events:none;opacity:0.9;">🧚 配对体感精灵 <span style="font-size:9px;opacity:0.7;">(右挥手触发)</span></div>
+          <!-- v4修改：简洁手势操作提示（不含开发说明） -->
+          <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+            <div style="padding:4px 10px;border-radius:8px;font-size:9px;background:rgba(167,139,250,0.08);color:var(--text2);border:1px solid rgba(167,139,250,0.15);">🤚 右挥手 → 配对精灵</div>
+            <div style="padding:4px 10px;border-radius:8px;font-size:9px;background:rgba(167,139,250,0.08);color:var(--text2);border:1px solid rgba(167,139,250,0.15);">✋ 手掌停3秒 → 跳过</div>
+            <div style="padding:4px 10px;border-radius:8px;font-size:9px;background:rgba(56,189,248,0.08);color:var(--text2);border:1px solid rgba(56,189,248,0.15);">📱 扫码 → WiFi配置</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-notes">
+      <div class="note-block">
+        <h4>🔧 开机自检逻辑 <span class="v2-tag">v2修改</span> &nbsp;·&nbsp; <a href="javascript:switchScreen('h0b')" style="color:var(--box-accent);text-decoration:underline;">→ H0b体感精灵配对</a></h4>
+        <ul>
+          <li><strong>网络</strong>：必须有WiFi，否则仅离线模式（计数可用，AI纠错不可用）</li>
+          <li><strong>WiFi管理</strong>：开机自检后常驻显示当前WiFi状态+扫码管理二维码，无需点击展开。手机扫码可配置网络（输入密码/切换网络），结果自动同步回盒子。无任何点击交互</li>
+          <li><strong>摄像头</strong>：核心依赖，未就绪无法进入训练</li>
+          <li><strong>体感精灵</strong>：非强制，未配对可跳过（心率/震动/长按不可用）</li>
+          <li><strong>已移除项</strong>：电视输出（HDMI直连电视无需自检）、扬声器（电视自带）</li>
+        </ul>
+      </div>
+      <div class="note-block fairy-note">
+        <h4>👋 手势操作提示 <span class="v2-tag">NEW</span> <span class="v3-tag">v4调整</span></h4>
+        <ul>
+          <li>v4原则：用户界面不展示开发说明（如"电视无触控"），仅展示操作提示标签</li>
+          <li>开发说明全部放底部注释区，用户界面保持简洁</li>
+          <li><strong>右挥手</strong> → 触发"配对体感精灵"</li>
+          <li><strong>手掌停3秒</strong> → 跳过配对</li>
+          <li><strong>扫码</strong> → WiFi配置/账号登录</li>
+          <li><strong>长按精灵</strong> → 暂停/退出</li>
+          <li>手势提示在首次开机时显示，后续开机可隐藏</li>
+        </ul>
+      </div>
+      <div class="note-block fairy-note">
+        <h4>🧚 体感精灵·设计要点</h4>
+        <ul>
+          <li>替代文档中的"蓝牙心率手环/儿童手表"，为居家版标配可穿戴设备</li>
+          <li>核心能力：心率监测、震动反馈、长按暂停、双击结束、手部动作识别</li>
+          <li>与校园版数据互通：在校数据同步至盒子，居家数据同步至校园后台</li>
+          <li>首次配对后自动记忆，后续开机自动重连</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== H0b: 体感精灵配对 ===== -->
+<div class="screen-block" id="h0b">
+  <div class="screen-header">
+    <div><h2>H0b · 体感精灵配对</h2><p>可穿戴传感器配对引导 · 蓝牙自动搜索</p></div>
+    <span class="screen-id">SCREEN-H0b</span>
+  </div>
+  <div class="screen-content">
+    <div class="device-frame">
+      <div class="device-chrome">
+        <div class="dc-dots"><div class="dc-dot"></div><div class="dc-dot"></div><div class="dc-dot"></div></div>
+        <span class="dc-label">AI运动盒子 · 居家版 v6.0</span>
+        <div class="dc-fairy-status"><div class="dc-fairy-dot"></div>搜索体感精灵中...</div>
+      </div>
+      <div class="device-screen">
+        <div class="s-fairy-pair">
+          <div class="fairy-pair-hero">
+            <div class="fairy-pair-visual">
+              <div class="fairy-pair-ring"></div>
+              <div class="fairy-device-icon">🧚</div>
+            </div>
+            <div class="fairy-pair-info">
+              <div class="fpi-name">体感精灵</div>
+              <div class="fpi-desc">佩戴在手腕的智能运动传感器<br>配合AI运动盒子实现精准动作识别与实时反馈</div>
+              <div class="fairy-feature-grid">
+                <div class="fairy-feature-item"><span class="ffi-icon">💓</span>实时心率</div>
+                <div class="fairy-feature-item"><span class="ffi-icon">📳</span>震动反馈</div>
+                <div class="fairy-feature-item"><span class="ffi-icon">✋</span>手势识别</div>
+                <div class="fairy-feature-item"><span class="ffi-icon">⏸️</span>长按暂停</div>
+              </div>
+            </div>
+          </div>
+          <div class="fairy-pair-steps">
+            <div class="fairy-step done"><div class="fs-num">1</div><div class="fs-text">长按体感精灵侧键 <strong>3秒</strong> 开机，指示灯快闪</div><div class="fs-status">✓ 已检测到</div></div>
+            <div class="fairy-step active"><div class="fs-num">2</div><div class="fs-text">将体感精灵靠近盒子 <strong>30cm</strong> 内，等待蓝牙自动配对</div><div class="fs-status">⏳ 配对中...</div></div>
+            <div class="fairy-step"><div class="fs-num">3</div><div class="fs-text">配对成功后，<strong>握拳-张开</strong> 完成校准</div><div class="fs-status">等待上一步</div></div>
+            <div class="fairy-step"><div class="fs-num">4</div><div class="fs-text">将体感精灵佩戴在 <strong>优势手手腕</strong>（惯用手）</div><div class="fs-status">等待上一步</div></div>
+          </div>
+          <!-- v4修改：移除不可触屏的跳过按钮，改为手势提示 -->
+          <div style="text-align:center;margin-top:10px;font-size:10px;color:var(--text3);">
+            ✋ <strong style="color:var(--text2);">手掌停3秒</strong> 跳过配对 &nbsp;·&nbsp; 🧚 <strong style="color:var(--text2);">长按精灵</strong> 稍后连接
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-notes">
+      <div class="note-block fairy-note">
+        <h4>🧚 体感精灵核心交互设计 &nbsp;·&nbsp; <a href="javascript:switchScreen('h1')" style="color:var(--box-accent);text-decoration:underline;">→ H1待机首页</a></h4>
+        <ul>
+          <li><strong>长按（1.5s）</strong> → 暂停/恢复训练，训练中万能操作</li>
+          <li><strong>双击</strong> → 结束训练（需二次确认，防误触）</li>
+          <li><strong>震动1次</strong> → 计数确认（每完成一个动作）</li>
+          <li><strong>震动2次</strong> → 动作纠错提醒（如脖子代偿）</li>
+          <li><strong>震动3次长震</strong> → 心率警告（>185bpm）</li>
+          <li><strong>握拳</strong> → 优势手握拳静止1秒（摄像头捕捉手部闭合），用于界面确认/导航</li>
+          <li><strong>张掌</strong> → 优势手五指张开静止1秒，用于取消/返回</li>
+          <li>优势手识别：首次佩戴时选择左/右手，影响手势识别算法</li>
+          <li><strong>握拳视觉捕捉说明</strong>：摄像头通过手部关键点闭合判定握拳状态，需满足：(1) 五指尖到手掌中心距离 < 阈值 (2) 持续静止 ≥ 1秒 (3) 仅优势手有效（非优势手握拳不触发）</li>
+        </ul>
+      </div>
+      <div class="note-block">
+        <h4>🔄 与校园版差异</h4>
+        <ul>
+          <li>校园版使用蓝牙手环/手表（学校选购），居家版标配体感精灵</li>
+          <li>体感精灵比手环新增：<strong>震动反馈</strong>、<strong>长按暂停</strong>、<strong>手部动作识别</strong></li>
+          <li>数据互通：校园版体测成绩 → 同步至居家版，居家训练 → 同步至学校后台</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== H1: 待机首页 ===== -->
+<div class="screen-block" id="h1">
+  <div class="screen-header">
+    <div><h2>H1 · 待机首页</h2><p>手势+扫码双入口 · 运动项目切换（手机同步电视） <span class="v3-tag">v3修改</span></p></div>
+    <span class="screen-id">SCREEN-H1</span>
+  </div>
+  <div class="screen-content">
+    <div class="device-frame">
+      <div class="device-chrome">
+        <div class="dc-dots"><div class="dc-dot"></div><div class="dc-dot"></div><div class="dc-dot"></div></div>
+        <span class="dc-label">AI运动盒子 · 居家版 v6.0</span>
+        <div class="dc-fairy-status"><div class="dc-fairy-dot"></div>体感精灵 已连接</div>
+      </div>
+      <div class="device-screen">
+        <div class="s-standby">
+          <!-- v4修改：日期时间移至左上角 -->
+          <div style="position:absolute;top:16px;left:20px;z-index:5;">
+            <div style="font-size:28px;font-weight:700;color:var(--text2);line-height:1.1;">19:30</div>
+            <div style="font-size:9px;color:var(--text3);margin-top:2px;">2026年6月9日 星期二</div>
+          </div>
+          <div style="position:absolute;top:16px;right:20px;z-index:5;text-align:right;">
+            <div style="font-size:9px;color:var(--text3);">🏠 家庭训练中心</div>
+          </div>
+          <div class="standby-center" style="padding-top:52px;">
+            <div class="app-title" style="font-size:20px;">AI 运动教练</div>
+            <!-- 手势切换预览行（挥手浏览项目） -->
+            <div style="display:flex;gap:5px;align-items:center;margin-top:8px;justify-content:center;">
+              <div style="padding:3px 10px;border-radius:14px;font-size:10px;border:1px solid rgba(255,255,255,0.08);color:var(--text3);opacity:0.4;">🤸 跳绳</div>
+              <div style="padding:4px 14px;border-radius:14px;font-size:11px;font-weight:700;border:1.5px solid var(--box-accent);background:rgba(56,189,248,0.1);color:#4fc3f7;">🏋️ 仰卧起坐</div>
+              <div style="padding:3px 10px;border-radius:14px;font-size:10px;border:1px solid rgba(255,255,255,0.08);color:var(--text3);opacity:0.4;">🏃 立定跳远</div>
+            </div>
+            <div style="font-size:9px;color:var(--text3);margin-top:5px;letter-spacing:0.2px;">👋 挥手切换 &nbsp;·&nbsp; 📱 扫码同步</div>
+            <!-- v5修改：移除重复的"手机选项目"卡片，右下角二维码已包含此功能 -->
+            <!-- v4修改：日期时间已移至左上角 -->
+          </div>
+          <div class="standby-entries">
+            <div class="entry-zone training" onclick="switchScreen('h2')">
+              <span class="ez-icon">✋</span>
+              <div class="ez-title">开始训练</div>
+              <div class="ez-desc">右手举起<br>自动人脸识别</div>
+            </div>
+            <div class="entry-zone data-view" onclick="switchScreen('h7')">
+              <span class="ez-icon">📋</span>
+              <div class="ez-title">我的数据</div>
+              <div class="ez-desc">左手举起<br>查看训练记录</div>
+            </div>
+            <!-- v5修改：移除扫码登录大窗口，右下角二维码已覆盖此功能 -->
+          </div>
+          <div class="cam-status"><div class="cam-dot"></div>摄像头就绪 · AI模型已加载</div>
+          <div class="standby-qr-corner">
+            <div class="sqr-info"><div class="sqr-label">手机扫码</div><div class="sqr-hint">登录 / 选项目</div></div>
+            <div class="qr-zone"><div class="qr-placeholder">扫码<br>同步</div></div>
+          </div>
+          <div class="standby-idle-bar"><div class="standby-idle-fill" style="animation-duration:300s;"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-notes">
+      <div class="note-block">
+        <h4>⏱️ 待机超时规则 &nbsp;·&nbsp; <a href="javascript:switchScreen('h2')" style="color:var(--box-accent);text-decoration:underline;">→ H2用户识别</a></h4>
+        <ul>
+          <li>待机屏 <strong>5分钟</strong> 无检测后进入省电模式（降低亮度）</li>
+          <li>摄像头检测到有人 → 立即唤醒</li>
+          <li>体感精灵靠近 → 也可唤醒（蓝牙距离检测）</li>
+        </ul>
+      </div>
+      <div class="note-block">
+        <h4>🔄 与校园版S1差异</h4>
+        <ul>
+          <li>🆕 增加<strong>扫码登录</strong>入口：家庭多人共用，快速切换</li>
+          <li>🆕 无触控操作：所有导航依赖手势或扫码</li>
+          <li>🆕 QR码常驻右下角，手机扫码可登录/填写信息</li>
+          <li>🆕 <strong>KEEP风格项目切换</strong>：手机扫码选择运动项目 → 电视自动同步切换（类似KEEP运动盒子的手机远程控制）</li>
+          <li>挥手左右可预览其他项目（轮播展示），握拳确认切换</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== H2: 用户识别 ===== -->
+<div class="screen-block" id="h2">
+  <div class="screen-header">
+    <div><h2>H2 · 用户识别</h2><p>人脸识别+扫码登录 · 首次/老用户路由</p></div>
+    <span class="screen-id">SCREEN-H2</span>
+  </div>
+  <div class="screen-content">
+    <div class="device-frame">
+      <div class="device-chrome">
+        <div class="dc-dots"><div class="dc-dot"></div><div class="dc-dot"></div><div class="dc-dot"></div></div>
+        <span class="dc-label">AI运动盒子 · 居家版 v6.0</span>
+        <div class="dc-fairy-status"><div class="dc-fairy-dot"></div>体感精灵 已连接</div>
+      </div>
+      <div class="device-screen">
+        <div class="s-user-recog">
+          <div id="scanGroup">
+            <div class="face-scan-area"><span class="fa-icon">📷</span></div>
+            <div class="face-recog-msg">正在识别中…</div>
+            <div class="face-recog-sub">请保持面部在摄像头范围内<br>保持右手举起姿势</div>
+            <div class="face-recog-dots"><div class="frd"></div><div class="frd"></div><div class="frd"></div></div>
+            <div style="font-size:10px;color:var(--text3);margin-top:8px;">⏱️ 识别超时：20s → 返回待机</div>
+          </div>
+          <div class="route-hint cold">🆕 首次使用 · 将进入冷启动引导</div>
+          <div class="qr-login-alt">
+            <div class="qla-qr"><div class="qla-qr-inner">扫码<br>登录/注册</div></div>
+            <div class="qla-text"><div class="qla-title">📱 手机扫码登录</div><div class="qla-desc">新用户扫码注册<br>老用户扫码切换</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-notes">
+      <div class="note-block">
+        <h4>🔄 路由判断逻辑</h4>
+        <ul>
+          <li><strong>首次用户</strong>：识别成功 → 3s后进入 <a href="javascript:switchScreen('h_cold')" style="color:var(--box-accent);text-decoration:underline;"><strong>H_COLD冷启动</strong></a></li>
+          <li><strong>老用户</strong>：识别成功 → 3s后进入 <a href="javascript:switchScreen('h3')" style="color:var(--box-accent);text-decoration:underline;"><strong>H3训练大厅</strong></a></li>
+          <li><strong>识别失败</strong>：显示失败提示 + 扫码替代 → 10s后返回H1</li>
+          <li>🆕 手机扫码注册：解决家庭新用户首次无数据问题</li>
+        </ul>
+      </div>
+      <div class="note-block">
+        <h4>📱 扫码登录场景</h4>
+        <ul>
+          <li><strong>家庭多用户</strong>：兄弟姐妹共用，扫码快速切换</li>
+          <li><strong>人脸未录入</strong>：新用户首次使用，扫码完成注册</li>
+          <li><strong>光线不足</strong>：晚间人脸识别困难，扫码备选</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== H_COLD: 冷启动 ===== -->
+<div class="screen-block" id="h_cold">
+  <div class="screen-header">
+    <div><h2>H_COLD · 个性化冷启动</h2><p>首次使用引导 · 体质档案建立 · 动作校准 <span class="v3-tag">v3修改</span></p></div>
+    <span class="screen-id">SCREEN-COLD</span>
+  </div>
+  <div class="screen-content">
+    <div class="device-frame">
+      <div class="device-chrome">
+        <div class="dc-dots"><div class="dc-dot"></div><div class="dc-dot"></div><div class="dc-dot"></div></div>
+        <span class="dc-label">AI运动盒子 · 居家版 v6.0</span>
+        <div class="dc-fairy-status"><div class="dc-fairy-dot"></div>体感精灵 已连接</div>
+      </div>
+      <div class="device-screen">
+        <div class="s-cold">
+          <div class="cold-progress-bar">
+            <div class="cpb-step done"><div class="cpb-dot">✓</div><span>已识别</span></div>
+            <div class="cpb-connector done"></div>
+            <div class="cpb-step active"><div class="cpb-dot">2</div><span>体质录入</span></div>
+            <div class="cpb-connector"></div>
+            <div class="cpb-step"><div class="cpb-dot">3</div><span>动作介绍</span></div>
+            <div class="cpb-connector"></div>
+            <div class="cpb-step"><div class="cpb-dot">4</div><span>试做校准</span></div>
+            <div class="cpb-connector"></div>
+            <div class="cpb-step"><div class="cpb-dot">5</div><span>完成</span></div>
+          </div>
+          <div class="cold-body">
+            <div class="cold-viz-panel">
+              <div class="cold-viz-label">📷 实时骨骼追踪</div>
+              <div class="cold-viz-skeleton">
+                <div class="cvs-head"></div><div class="cvs-torso"></div>
+                <div class="cvs-arm-l"></div><div class="cvs-arm-r"></div>
+                <div class="cvs-leg-l"></div><div class="cvs-leg-r"></div>
+              </div>
+              <div class="cold-viz-status">🧚 体感精灵 · 手部追踪已激活</div>
+            </div>
+            <div class="cold-right-panel">
+              <div class="cold-step-block" id="coldBlock0">
+                <div class="cold-step-icon">📱</div>
+                <div class="cold-step-title">体质信息录入</div>
+                <div class="cold-step-desc">使用手机扫描屏幕二维码，填写身高、体重等基础信息<br>系统将据此计算BMI，生成个性化训练方案</div>
+                <div style="display:flex;gap:16px;align-items:center;margin-top:8px;">
+                  <div class="qr-zone"><div class="qr-placeholder">扫码<br>填写信息</div><div class="qr-label">手机扫码填写</div></div>
+                  <div style="font-size:10px;color:var(--text3);line-height:1.6;">
+                    ✅ 已同步校园档案的学生可跳过此步<br>
+                    🆕 未关联校园的新用户需扫码完成录入
+                  </div>
+                </div>
+                <!-- v3修改：移除点击按钮，改为手势/扫码提示 -->
+                <div style="margin-top:6px;padding:8px 12px;background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-radius:8px;font-size:9px;color:var(--text3);line-height:1.8;">
+                  📱 <strong style="color:var(--text2);">扫码填写完成</strong> → 自动进入下一步 &nbsp;·&nbsp; 🤚 <strong style="color:var(--text2);">右挥手</strong> → 跳过进训练大厅
+                </div>
+              </div>
+              <div class="cold-step-block hidden" id="coldBlock1">
+                <div class="cold-step-icon">📖</div>
+                <div class="cold-step-title">仰卧起坐 · 标准动作规范</div>
+                <div class="cold-step-desc">🎬 动画演示标准动作<br>🧚 体感精灵将帮助你感受正确发力方式<br>⚠️ 收下巴，用腹部力量起身，避免脖子代偿</div>
+                <!-- v3修改：移除点击按钮 -->
+                <div style="margin-top:6px;padding:8px 12px;background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-radius:8px;font-size:9px;color:var(--text3);line-height:1.8;">
+                  ✊ <strong style="color:var(--text2);">握拳确认</strong> → 开始试做校准 &nbsp;·&nbsp; 🤚 <strong style="color:var(--text2);">左挥手</strong> → 返回上一步
+                </div>
+              </div>
+              <div class="cold-step-block hidden" id="coldBlock2">
+                <div class="cold-step-icon">🏋️</div>
+                <div class="cold-step-title">试做校准（3次）</div>
+                <div class="cold-step-desc">完成 <strong>3次</strong> 仰卧起坐，系统将采集动作基线<br>🧚 每次到位时，体感精灵会<strong>震动1次</strong>确认</div>
+                <div style="display:flex;gap:8px;margin-top:8px;">
+                  <div style="flex:1;padding:10px;border-radius:8px;background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.2);text-align:center;">
+                    <div style="font-size:18px;font-weight:700;color:var(--success);">2/3</div>
+                    <div style="font-size:9px;color:var(--text3);">已完成</div>
+                  </div>
+                  <div style="flex:1;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border);text-align:center;">
+                    <div style="font-size:18px;font-weight:700;color:var(--box-accent);">75°</div>
+                    <div style="font-size:9px;color:var(--text3);">肩髋夹角</div>
+                  </div>
+                </div>
+                <!-- v3修改：移除点击按钮 -->
+                <div style="margin-top:6px;padding:8px 12px;background:rgba(56,189,248,0.04);border:1px solid rgba(56,189,248,0.15);border-radius:8px;font-size:9px;color:var(--text3);line-height:1.8;">
+                  🏋️ <strong style="color:var(--text2);">完成3次动作</strong> → 自动校准完成，进入下一步
+                </div>
+              </div>
+              <div class="cold-step-block hidden" id="coldBlock3">
+                <div class="cold-step-icon">🎉</div>
+                <div class="cold-step-title">校准完成！</div>
+                <div class="cold-step-desc">✅ 个性化动作基线已建立<br>🧚 体感精灵已与你的动作习惯同步<br>💪 系统将根据你的体型定制训练方案</div>
+                <!-- v3修改：移除点击按钮，自动跳转 -->
+                <div style="margin-top:6px;padding:8px 12px;background:rgba(0,229,204,0.06);border:1px solid rgba(0,229,204,0.2);border-radius:8px;font-size:9px;color:var(--text3);line-height:1.8;">
+                  ✅ <strong style="color:var(--accent);">校准完成</strong> → 3秒后自动进入训练大厅 &nbsp;·&nbsp; ✊ <strong style="color:var(--text2);">握拳</strong> → 立即进入
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- v4修改：移除不可触屏的跳过链接，改为手势提示 -->
+          <div style="padding:8px 24px 12px;text-align:center;font-size:10px;color:var(--text3);">
+            🤚 <strong style="color:var(--text2);">右挥手</strong> 跳过引导，直接进大厅
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-notes triple">
+      <div class="note-block">
+        <h4>🔧 冷启动流程说明 · <span style="color:var(--box-accent);">点击跳转查看每步界面</span></h4>
+        <ul>
+          <li><a href="javascript:coldNextStep(0)" style="color:var(--box-accent);text-decoration:underline;font-weight:600;">Step1 体质录入</a>：优先从校园系统同步，新用户扫码填写</li>
+          <li><a href="javascript:coldNextStep(1)" style="color:var(--box-accent);text-decoration:underline;font-weight:600;">Step2 动作介绍</a>：动画+语音讲解，体感精灵震动演示正确节奏</li>
+          <li><a href="javascript:coldNextStep(2)" style="color:var(--box-accent);text-decoration:underline;font-weight:600;">Step3 试做校准</a>：3次非计数测试，建立个人动作基线</li>
+          <li><a href="javascript:coldNextStep(3)" style="color:var(--box-accent);text-decoration:underline;font-weight:600;">Step4 完成</a>：BMI分组+个人基线 → 生成训练方案</li>
+        </ul>
+      </div>
+      <div class="note-block fairy-note">
+        <h4>🧚 体感精灵在校准中的作用</h4>
+        <ul>
+          <li>震动提示：每次动作到位 → 震动1次确认</li>
+          <li>心率基线：静息心率 → 后续疲劳度判断基准</li>
+          <li>手部追踪：确认学生双手是否正确放置于头后</li>
+        </ul>
+      </div>
+      <div class="note-block">
+        <h4>🔄 与校园版冷启动差异</h4>
+        <ul>
+          <li>🆕 体质信息录入改为<strong>手机扫码填写</strong></li>
+          <li>🆕 校园数据已同步的用户可跳过体质录入</li>
+          <li>🆕 体感精灵震动反馈融入校准流程</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== H3: 训练大厅 ===== -->
+<div class="screen-block" id="h3">
+  <div class="screen-header">
+    <div><h2>H3 · 训练大厅</h2><p>运动项目切换 · 模式选择 · 快速训练概览 <span class="v3-tag">v3修改</span></p></div>
+    <span class="screen-id">SCREEN-H3</span>
+  </div>
+  <div class="screen-content">
+    <div class="device-frame">
+      <div class="device-chrome">
+        <div class="dc-dots"><div class="dc-dot"></div><div class="dc-dot"></div><div class="dc-dot"></div></div>
+        <span class="dc-label">AI运动盒子 · 居家版 v6.0</span>
+        <div class="dc-fairy-status"><div class="dc-fairy-dot"></div>体感精灵 已连接</div>
+      </div>
+      <div class="device-screen">
+        <div class="s-hall">
+          <div class="hall-top">
+            <div class="hall-user">
+              <div class="hall-avatar">明</div>
+              <div class="hall-user-info"><div class="hui-name">张明轩</div><div class="hui-desc">南山实验中学 · 高二(3)班 · BMI 21.3</div></div>
+            </div>
+            <div style="font-size:10px;color:var(--text3);">👋 左挥手退出</div>
+          </div>
+          <!-- v2新增：运动项目选择条 -->
+          <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 24px 0;z-index:1;flex-wrap:wrap;">
+            <span style="font-size:10px;color:var(--text3);">运动项目：</span>
+            <div style="display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid #4fc3f7;background:rgba(79,195,247,0.1);color:#4fc3f7;cursor:pointer;">🏋️ 仰卧起坐</div>
+            <div style="display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);color:var(--text3);cursor:not-allowed;opacity:0.4;" title="即将上线">🤸 跳绳 <span style="font-size:8px;padding:1px 5px;border-radius:6px;background:rgba(255,171,0,0.15);color:var(--warning);">即将上线</span></div>
+            <div style="display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);color:var(--text3);cursor:not-allowed;opacity:0.4;" title="即将上线">🏃 立定跳远 <span style="font-size:8px;padding:1px 5px;border-radius:6px;background:rgba(255,171,0,0.15);color:var(--warning);">即将上线</span></div>
+            <div style="display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);color:var(--text3);cursor:not-allowed;opacity:0.4;" title="规划中">👟 跑步 <span style="font-size:8px;padding:1px 5px;border-radius:6px;background:rgba(255,255,255,0.06);color:var(--text3);">规划中</span></div>
+            <div style="display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);color:var(--text3);cursor:not-allowed;opacity:0.4;" title="规划中">🧘 热身训练 <span style="font-size:8px;padding:1px 5px;border-radius:6px;background:rgba(255,255,255,0.06);color:var(--text3);">规划中</span></div>
+            <div style="display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);color:var(--text3);cursor:not-allowed;opacity:0.4;" title="规划中">🎮 体感游戏 <span style="font-size:8px;padding:1px 5px;border-radius:6px;background:rgba(255,255,255,0.06);color:var(--text3);">规划中</span></div>
+          </div>
+          <div class="hall-mode-title">👋 左右挥手切换 · ✊ 握拳确认 · 🧚 体感精灵长按返回</div>
+          <div class="hall-modes">
+            <div class="mode-card selected" onclick="switchScreen('h4a')">
+              <div class="mc-icon">🎯</div><div class="mc-name">自由训练</div><div class="mc-desc">个人节奏<br>自选目标</div><div class="mc-tag"><span class="label-tag blue">个数/限时</span></div>
+            </div>
+            <div class="mode-card" onclick="switchScreen('h4b')">
+              <div class="mc-icon">📚</div><div class="mc-name">课程训练</div><div class="mc-desc">跟随课程<br>按计划完成</div><div class="mc-tag"><span class="label-tag cyan">课程固定</span></div>
+            </div>
+            <div class="mode-card" onclick="switchScreen('h4c')">
+              <div class="mc-icon">📋</div><div class="mc-name">体测模拟</div><div class="mc-desc">严格国标<br>1分钟计数</div><div class="mc-tag"><span class="label-tag orange">限时1分钟</span></div>
+            </div>
+            <div class="mode-card" style="opacity:0.5;cursor:not-allowed;">
+              <div class="mc-icon">🎮</div><div class="mc-name">体感游戏</div><div class="mc-desc">趣味挑战<br>运动闯关</div><div class="mc-tag"><span class="label-tag pink">即将上线</span></div>
+            </div>
+          </div>
+          <!-- v3修改：移除重复的运动项目展示网格，替换为训练快速概览 -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:8px 24px 4px;max-width:760px;margin:0 auto;">
+            <div style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.15);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:18px;font-weight:700;color:var(--box-accent);">32</div>
+              <div style="font-size:9px;color:var(--text3);">昨日训练量</div>
+            </div>
+            <div style="background:rgba(0,229,204,0.06);border:1px solid rgba(0,229,204,0.15);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:18px;font-weight:700;color:var(--accent);">7</div>
+              <div style="font-size:9px;color:var(--text3);">连续训练天数</div>
+            </div>
+            <div style="background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.15);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:18px;font-weight:700;color:var(--fairy);">78%</div>
+              <div style="font-size:9px;color:var(--text3);">本周达标率</div>
+            </div>
+            <div style="background:rgba(255,171,0,0.06);border:1px solid rgba(255,171,0,0.15);border-radius:10px;padding:10px;text-align:center;">
+              <div style="font-size:18px;font-weight:700;color:var(--warning);">B+</div>
+              <div style="font-size:9px;color:var(--text3);">AI综合评分</div>
+            </div>
+          </div>
+          <div class="hall-extend-hint">
+            <span class="heh-icon">🚀</span>
+            <span class="heh-text">更多运动项目即将上线：<strong>跳绳 · 立定跳远 · 跑步 · 热身训练</strong> · 基于通用AI运动架构无缝扩展</span>
+          </div>
+          <div class="hall-bottom">
+            <div class="hall-gesture-hint">👋 挥手 = 切换模式 · ✊ 握拳 = 确认 · 🧚 长按 = 退出 · 📱 扫码 = 快速设置</div>
+            <div class="hall-idle-indicator"><div class="hall-idle-fill" style="animation-duration:60s;"></div></div>
+            <div style="font-size:9px;color:var(--text3);text-align:center;margin-top:4px;">⏱️ 60s无操作 → 自动退出登录 → 返回待机</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-notes">
+      <div class="note-block">
+        <h4>🎮 模式说明与扩展性 &nbsp;·&nbsp; <a href="javascript:switchScreen('h4a')" style="color:var(--box-accent);text-decoration:underline;">→ H4a训练准备</a></h4>
+        <ul>
+          <li><strong>自由训练</strong>：自定义目标个数或限时</li>
+          <li><strong>课程训练</strong>：系统推荐课程，按组完成</li>
+          <li><strong>体测模拟</strong>：严格国标1分钟</li>
+          <li>🆕 <strong>体感游戏</strong>：利用体感精灵手势的运动闯关</li>
+          <li>🆕 <strong>热身训练</strong>：运动前拉伸引导</li>
+          <li>通用架构支持：跳绳、立定跳远、跑步等项目可无缝扩展</li>
+        </ul>
+      </div>
+      <div class="note-block">
+        <h4>🔄 与校园版S3差异</h4>
+        <ul>
+          <li>🆕 无多人PK模式（居家场景，后续版本增加亲子PK）</li>
+          <li>🆕 确认手势改为<strong>优势手握拳静止1秒</strong>（摄像头捕捉，居家更自然，无需触碰屏幕）</li>
+          <li>🆕 增加<strong>扫码快速设置</strong></li>
+          <li>🆕 增加<strong>项目扩展提示区</strong></li>
+          <li>🆕 体感精灵长按 = 返回（替代校园版"举双手退出"）</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== H4a: 自由训练准备 ===== -->
+<div class="screen-block" id="h4a">
+  <div class="screen-header">
+    <div><h2>H4a · 训练准备 · 自由训练</h2><p>目标选择 · 体感精灵检查 · 手势确认</p></div>
+    <span class="screen-id">SCREEN-H4a</span>
+  </div>
+  <div class="screen-content">
+    <div class="device-frame">
+      <div class="device-chrome">
+        <div class="dc-dots"><div class="dc-dot"></div><div class="dc-dot"></div><div class="dc-dot"></div></div>
+        <span class="dc-label">AI运动盒子 · 居家版 v6.0</span>
+        <div class="dc-fairy-status"><div class="dc-fairy-dot"></div>体感精灵 已连接</div>
+      </div>
+      <div class="device-screen">
+        <div class="s-prep">
+          <div class="prep-mode-tag free">🎯 自由训练</div>
+          <div class="prep-msg">👋 上下挥手切换目标 · ✊ 握拳确认 · 📱 手机上设置自定义数值</div>
+          <div class="prep-body">
+            <div class="prep-fairy-check">
+              <div class="pfc-title">🧚 体感精灵状态</div>
+              <div class="pfc-item ok"><div class="pfc-dot" style="background:var(--success);"></div><div class="pfc-label">蓝牙连接</div><div class="pfc-val">✓ 稳定</div></div>
+              <div class="pfc-item ok"><div class="pfc-dot" style="background:var(--success);"></div><div class="pfc-label">电量</div><div class="pfc-val">87%</div></div>
+              <div class="pfc-item ok"><div class="pfc-dot" style="background:var(--success);"></div><div class="pfc-label">心率基线</div><div class="pfc-val">72 bpm</div></div>
+              <div class="pfc-item ok"><div class="pfc-dot" style="background:var(--success);"></div><div class="pfc-label">手势识别</div><div class="pfc-val">✓ 就绪</div></div>
+              <div class="pfc-hint">💡 训练中：长按暂停 · 双击结束<br>⚠️ 电量<20%时建议充电</div>
+            </div>
+            <div class="prep-target-panel">
+              <div class="target-option selected" onclick="selectTarget(this)"><div class="to-icon">🔢</div><div class="to-info"><div class="to-name">目标个数</div><div class="to-desc">推荐：30个（基于你的能力）</div></div><div class="to-check">✓</div></div>
+              <div class="target-option" onclick="selectTarget(this)"><div class="to-icon">⏱️</div><div class="to-info"><div class="to-name">限时挑战</div><div class="to-desc">推荐：2分钟（基于你的能力）</div></div><div class="to-check">✓</div></div>
+              <div class="target-option" onclick="selectTarget(this)"><div class="to-icon">💪</div><div class="to-info"><div class="to-name">突破自我</div><div class="to-desc">上次记录：38个，尝试打破！</div></div><div class="to-check">✓</div></div>
+              <div class="target-option" onclick="selectTarget(this)"><div class="to-icon">📱</div><div class="to-info"><div class="to-name">手机上设置</div><div class="to-desc">扫码打开手机端设置具体数值</div></div><div class="to-check">✓</div></div>
+            </div>
+          </div>
+          <!-- v4修改：按钮移至底部交互说明 -->
+          <div style="padding:10px 20px;display:flex;gap:10px;justify-content:center;font-size:10px;color:var(--text3);">
+            <div style="padding:5px 12px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border);">🤚 左挥手 → 返回大厅 &nbsp; ↕️ 上下挥手 → 切换目标</div>
+            <div style="padding:5px 12px;border-radius:8px;background:rgba(0,229,204,0.06);border:1px solid rgba(0,229,204,0.2);color:var(--accent);">✊ 握拳 → 确认开始</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-notes">
+      <div class="note-block">
+        <h4>🎯 目标推荐逻辑 &nbsp;·&nbsp; <a href="javascript:switchScreen('h4b')" style="color:var(--box-accent);text-decoration:underline;">→ H4b目标设定</a></h4>
+        <ul>
+          <li>基于BMI + 最近3次训练 + 心率基线 → 智能推荐</li>
+          <li>首次训练：BMI正常推荐30个/2min</li>
+          <li>"突破自我"：取最近7天最高记录 + 10%</li>
+          <li>扫码自定义：手机端滑块设置，同步至电视</li>
+        </ul>
+      </div>
+      <div class="note-block">
+        <h4>🔙 返回操作说明 <span class="v3-tag">v4新增</span></h4>
+        <ul>
+          <li>用户无法触屏点击"← 返回"，必须通过手势操作</li>
+          <li><strong>左挥手</strong> → 返回训练大厅（H3）</li>
+          <li><strong>上下挥手</strong> → 切换目标/课程选项（与左/右挥手方向不同，避免冲突）</li>
+          <li><strong>握拳</strong> → 优势手握拳静止1秒，确认当前选择并开始训练</li>
+          <li>⚠️ 手势方向冲突说明：左/右挥手用于页面级导航（返回/前进），上/下挥手用于页面内选项切换</li>
+          <li>底部交互说明区用于原型演示跳转，实际界面仅显示手势提示标签</li>
+        </ul>
+      </div>
+      <div class="note-block fairy-note">
+        <h4>🧚 训练前体感精灵检查</h4>
+        <ul>
+          <li><strong>蓝牙连接</strong>：不稳定时提示靠近盒子</li>
+          <li><strong>电量</strong>：>50%绿色，20-50%黄色，<20%红色</li>
+          <li><strong>心率基线</strong>：记录静息心率，判定疲劳度基准</li>
+          <li><strong>手势识别</strong>：握拳/张开校准，确保交互正常</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== H4b: 课程训练 ===== -->
+<div class="screen-block" id="h4b">
+  <div class="screen-header">
+    <div><h2>H4b · 训练准备 · 课程训练</h2><p>系统推荐课程 · 按组完成</p></div>
+    <span class="screen-id">SCREEN-H4b</span>
+  </div>
+  <div class="screen-content">
+    <div class="device-frame">
+      <div class="device-chrome">
+        <div class="dc-dots"><div class="dc-dot"></div><div class="dc-dot"></div><div class="dc-dot"></div></div>
+        <span class="dc-label">AI运动盒子 · 居家版 v6.0</span>
+        <div class="dc-fairy-status"><div class="dc-fairy-dot"></div>体感精灵 已连接</div>
+      </div>
+      <div class="device-screen">
+        <div class="s-prep">
+          <div class="prep-mode-tag course">📚 课程训练</div>
+          <div class="prep-msg">👋 上下挥手切换课程 · ✊ 握拳确认 · 🤚 左挥手返回大厅</div>
+          <div class="prep-body" style="flex-direction:column;gap:12px;">
+            <div class="target-option selected" onclick="selectTarget(this)" style="max-width:500px;"><div class="to-icon">📘</div><div class="to-info"><div class="to-name">核心力量提升 · 第3天</div><div class="to-desc">3组×15个 · 组间休息45秒 · 难度：★★☆</div></div><div class="to-check">✓</div></div>
+            <div class="target-option" onclick="selectTarget(this)" style="max-width:500px;"><div class="to-icon">📗</div><div class="to-info"><div class="to-name">体测冲刺 · 第1天</div><div class="to-desc">2组×20个 · 组间休息60秒 · 难度：★★★</div></div><div class="to-check">✓</div></div>
+            <div class="target-option" onclick="selectTarget(this)" style="max-width:500px;"><div class="to-icon">📙</div><div class="to-info"><div class="to-name">零基础入门 · 第5天</div><div class="to-desc">2组×10个 · 组间休息90秒 · 难度：★☆☆</div></div><div class="to-check">✓</div></div>
+          </div>
+          <!-- v4修改：按钮移至底部交互说明 -->
+          <div style="padding:10px 20px;display:flex;gap:10px;justify-content:center;font-size:10px;color:var(--text3);">
+            <div style="padding:5px 12px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border);">🤚 左挥手 → 返回大厅 &nbsp; ↕️ 上下挥手 → 切换课程</div>
+            <div style="padding:5px 12px;border-radius:8px;background:rgba(0,229,204,0.06);border:1px solid rgba(0,229,204,0.2);color:var(--accent);">✊ 握拳 → 开始第1组</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-notes">
+      <div class="note-block"><h4>📚 课程推荐逻辑 &nbsp;·&nbsp; <a href="javascript:switchScreen('h4c')" style="color:var(--box-accent);text-decoration:underline;">→ H4c体测模拟</a></h4><ul><li>根据BMI分组+训练历史+距体测天数 → 推荐最适课程</li><li>课程进度跨端同步：校园训练 → 居家继续</li><li>组间休息：语音+屏幕倒计时，体感精灵震动3秒提醒恢复</li></ul></div>
+      <div class="note-block"><h4>🔄 差异</h4><ul><li>校园版课程由教师布置，居家版由系统推荐</li><li>🆕 手机端可查看课程详情和进度</li><li>🆕 组间休息时体感精灵震动提醒</li></ul></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== H4c: 体测模拟 ===== -->
+<div class="screen-block" id="h4c">
+  <div class="screen-header">
+    <div><h2>H4c · 训练准备 · 体测模拟</h2><p>严格国标 · 1分钟计时 · 橙色主题</p></div>
+    <span class="screen-id">SCREEN-H4c</span>
+  </div>
+  <div class="screen-content">
+    <div class="device-frame">
+      <div class="device-chrome">
+        <div class="dc-dots"><div class="dc-dot"></div><div class="dc-dot"></div><div class="dc-dot"></div></div>
+        <span class="dc-label">AI运动盒子 · 居家版 v6.0</span>
+        <div class="dc-fairy-status"><div class="dc-fairy-dot"></div>体感精灵 已连接</div>
+      </div>
+      <div class="device-screen">
+        <div class="s-prep" style="background:radial-gradient(ellipse at 50% 30%, #1a1500 0%, var(--box-bg) 100%);">
+          <div class="prep-mode-tag exam">📋 体测模拟</div>
+          <div class="prep-msg">严格按照国家学生体质健康标准执行 · ✊ 握拳确认开始</div>
+          <div class="prep-body" style="flex-direction:column;gap:10px;align-items:center;">
+            <div style="font-size:36px;">📋</div>
+            <div style="font-size:16px;font-weight:600;color:var(--warning);">国标体测 · 1分钟仰卧起坐</div>
+            <div style="font-size:11px;color:var(--text2);text-align:center;line-height:1.8;max-width:500px;">
+              ⏱️ 限时 <strong style="color:var(--warning);">60秒</strong> · 严格计数 · 不规范动作不计<br>
+              📊 对标年级评分：高二男生优秀线 <strong style="color:var(--success);">51个</strong><br>
+              ⚠️ 臀部不得离垫 · 肩胛必须触垫 · 双手抱头<br>
+              🧚 体感精灵辅助检测手部位置
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <div style="padding:10px 16px;border-radius:10px;background:rgba(255,171,0,0.08);border:1px solid rgba(255,171,0,0.2);text-align:center;"><div style="font-size:14px;font-weight:700;color:var(--warning);">38个</div><div style="font-size:9px;color:var(--text3);">上次成绩</div></div>
+              <div style="padding:10px 16px;border-radius:10px;background:rgba(255,171,0,0.08);border:1px solid rgba(255,171,0,0.2);text-align:center;"><div style="font-size:14px;font-weight:700;color:var(--warning);">良好</div><div style="font-size:9px;color:var(--text3);">上次评级</div></div>
+              <div style="padding:10px 16px;border-radius:10px;background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.2);text-align:center;"><div style="font-size:14px;font-weight:700;color:var(--success);">+3个</div><div style="font-size:9px;color:var(--text3);">进步目标</div></div>
+            </div>
+          </div>
+          <!-- v4修改：按钮移至底部交互说明 -->
+          <div style="padding:10px 20px;display:flex;gap:10px;justify-content:center;font-size:10px;color:var(--text3);">
+            <div style="padding:5px 12px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border);">🤚 左挥手 → 返回大厅</div>
+            <div style="padding:5px 12px;border-radius:8px;background:rgba(255,171,0,0.08);border:1px solid rgba(255,171,0,0.2);color:var(--warning);">✊ 握拳 → 开始体测模拟</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-notes">
+      <div class="note-block"><h4>📋 体测模拟规则 &nbsp;·&nbsp; <a href="javascript:switchScreen('h5')" style="color:var(--box-accent);text-decoration:underline;">→ H5训练中</a></h4><ul><li>严格国标：肩胛触垫+起身角度≥70°+臀部不离垫</li><li>不规范：屏幕即时标注+语音提示+体感精灵震动2次</li><li>结束后：对标年级评分表，给出评级和改进建议</li></ul></div>
+      <div class="note-block"><h4>🔄 差异</h4><ul><li>校园版有班级集体模式，居家版仅单人</li><li>🆕 可记录每次模拟成绩，生成体测进步曲线</li><li>🆕 体感精灵辅助手部位置检测</li></ul></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== H5: 训练中（核心） ===== -->
+<div class="screen-block" id="h5">
+  <div class="screen-header">
+    <div><h2>H5 · 训练中（核心）</h2><p>实时骨骼+计数+体感精灵集成+心率预警+手势控制</p></div>
+    <span class="screen-id">SCREEN-H5 <span class="v1-tag">核心</span></span>
+  </div>
+  <div class="screen-content">
+    <div class="device-frame">
+      <div class="device-chrome">
+        <div class="dc-dots"><div class="dc-dot"></div><div class="dc-dot"></div><div class="dc-dot"></div></div>
+        <span class="dc-label">AI运动盒子 · 居家版 v6.0</span>
+        <div class="dc-fairy-status"><div class="dc-fairy-dot"></div>体感精灵 · HR 128bpm</div>
+      </div>
+      <div class="device-screen">
+        <div class="s-training">
+          <div class="fairy-bar">
+            <div class="fb-left">
+              <span class="fb-icon">🧚</span><span class="fb-name">体感精灵</span>
+              <span class="fb-hr">💓 <span>128</span> bpm</span><span class="fb-battery">🔋 82%</span>
+            </div>
+            <div class="fb-actions">
+              <span class="fb-action"><kbd>长按</kbd> 暂停</span>
+              <span class="fb-action"><kbd>双击</kbd> 结束</span>
+              <span class="fb-action">👋 挥手返回</span>
+            </div>
+          </div>
+          <div class="training-top">
+            <div class="tt-left"><span class="tt-mode">自由训练 · 目标30个</span><span class="tt-timer">02:34</span></div>
+            <div class="tt-right"><span class="tt-hr">💓 <span class="tt-hr-val">128</span> bpm</span><span class="tt-fairy">🧚 已连接</span><span class="tt-pause">🧚长按暂停</span></div>
+          </div>
+          <div class="training-body">
+            <div class="training-canvas">
+              <div class="training-skeleton">
+                <div class="ts-head"></div><div class="ts-torso"></div>
+                <div class="ts-arm-l"></div><div class="ts-arm-r"></div>
+                <div class="ts-fairy-l" title="体感精灵-左手"></div>
+                <div class="ts-fairy-r" title="体感精灵-右手"></div>
+                <div class="ts-leg-l"></div><div class="ts-leg-r"></div>
+                <div class="ts-angle-arc"></div><div class="ts-angle-label">73°</div>
+              </div>
+              <div class="training-count">
+                <div class="tc-number">22</div><div class="tc-label">已完成 / 目标30</div>
+                <div class="tc-quality"><div class="tc-qdot good"></div><div class="tc-qdot good"></div><div class="tc-qdot bad"></div><div class="tc-qdot good"></div><div class="tc-qdot good"></div></div>
+              </div>
+              <div class="training-feedback">
+                <div class="tf-item correct"><span class="tf-msg">✅ 动作到位！腹部发力很棒</span><span class="tf-source">🧚</span></div>
+                <div class="tf-item warning"><span class="tf-msg">⚠️ 注意收下巴，避免脖子代偿</span><span class="tf-source">🧚震动2次</span></div>
+              </div>
+              <!-- v6修改：训练提示标签移至底部说明区，点击后在用户界面展示 -->
+              <div id="h5PromptPanel" style="display:none;margin-top:6px;padding:8px 12px;border-radius:8px;font-size:10px;line-height:1.7;transition:all 0.3s;"></div>
+            </div>
+            <div class="hr-alert-bar" id="hrAlert">
+              <span class="hra-icon">❤️‍🔥</span>
+              <div class="hra-text"><div class="hra-title">心率偏高：162 bpm</div><div class="hra-sub">建议放缓节奏，注意呼吸</div></div>
+            </div>
+            <div class="pause-overlay" id="pauseOverlay">
+              <div class="po-icon">⏸️</div><div class="po-title">训练已暂停</div>
+              <div class="po-hint">体感精灵长按恢复 · 或选择以下操作</div>
+              <!-- v4修改：暂停时也不可触屏，改为手势提示 -->
+              <div style="display:flex;gap:10px;justify-content:center;font-size:11px;color:var(--text3);margin-top:8px;">
+                <div style="padding:6px 14px;border-radius:10px;background:rgba(0,229,204,0.06);border:1px solid rgba(0,229,204,0.2);color:var(--accent);">🧚 长按精灵 → 继续训练</div>
+                <div style="padding:6px 14px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--border);">🧚 双击精灵 → 结束训练</div>
+              </div>
+            </div>
+          </div>
+          <div class="training-bottom">
+            <div class="tb-gesture"><span>👋 挥手 = 退出确认</span><span>🧚 长按 = 暂停/恢复</span><span>🧚 双击 = 结束训练</span></div>
+            <div class="tb-fairy-hint">🧚 体感精灵 · 计数震动已开启</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-notes triple">
+      <div class="note-block">
+        <h4>🏋️ 训练中交互设计 &nbsp;·&nbsp; <a href="javascript:switchScreen('h6')" style="color:var(--box-accent);text-decoration:underline;">→ H6即时报告</a></h4>
+        <ul>
+          <li><strong>计数确认</strong>：完成1个 → 体感精灵震动1次 + 屏幕数字+1</li>
+          <li><strong>动作纠错</strong>：不规范 → 震动2次 + 语音提示</li>
+          <li><strong>心率警告</strong>：>160bpm提醒，>185bpm强制暂停</li>
+          <li><strong>暂停方式</strong>：体感精灵长按1.5s / 挥手+握拳确认</li>
+          <li><strong>结束方式</strong>：体感精灵双击 / 达成目标自动结束</li>
+        </ul>
+      </div>
+      <div class="note-block fairy-note">
+        <h4>🧚 体感精灵训练中功能 &nbsp;·&nbsp; <span style="color:var(--box-accent);">点击下方标签 → 在用户界面预览对应提示效果</span></h4>
+        <div style="margin:8px 0;display:flex;flex-wrap:wrap;gap:4px;">
+          <div onclick="showH5Prompt('oob')" style="padding:3px 8px;border-radius:6px;font-size:9px;border:1px solid rgba(255,82,82,0.3);background:rgba(255,82,82,0.06);color:#ff5252;cursor:pointer;">🔴 动作出界</div>
+          <div onclick="showH5Prompt('pace')" style="padding:3px 8px;border-radius:6px;font-size:9px;border:1px solid rgba(255,193,7,0.3);background:rgba(255,193,7,0.06);color:#ffc107;cursor:pointer;">🟡 节奏偏快</div>
+          <div onclick="showH5Prompt('rest')" style="padding:3px 8px;border-radius:6px;font-size:9px;border:1px solid rgba(76,175,80,0.3);background:rgba(76,175,80,0.06);color:#4caf50;cursor:pointer;">🟢 休息建议</div>
+          <div onclick="showH5Prompt('count')" style="padding:3px 8px;border-radius:6px;font-size:9px;border:1px solid rgba(56,189,248,0.3);background:rgba(56,189,248,0.06);color:var(--box-accent);cursor:pointer;">🔵 计数修正</div>
+          <div onclick="showH5Prompt('motivate')" style="padding:3px 8px;border-radius:6px;font-size:9px;border:1px solid rgba(167,139,250,0.3);background:rgba(167,139,250,0.06);color:var(--fairy);cursor:pointer;">🟣 激励鼓励</div>
+        </div>
+        <ul>
+          <li>💓 心率实时上传 → 疲劳度判定+安全预警</li>
+          <li>📳 震动编码：1次=到位，2次=纠错，3次长震=心率警告</li>
+          <li>✋ 手部位置检测：判断双手是否抱头</li>
+          <li>⏸️ 长按暂停：训练中"万能键"</li>
+          <li>⏹️ 双击结束：3秒内再次确认，防误触</li>
+        </ul>
+      </div>
+      <div class="note-block">
+        <h4>🔄 与校园版S6差异</h4>
+        <ul>
+          <li>🆕 顶部增加<strong>体感精灵状态栏</strong></li>
+          <li>🆕 骨骼图增加<strong>体感精灵标记点</strong>（手腕紫色光点）</li>
+          <li>🆕 暂停改为<strong>长按体感精灵</strong></li>
+          <li>🆕 结束增加<strong>双击体感精灵</strong></li>
+          <li>🆕 震动反馈替代部分语音（夜间不打扰家人）</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== H6: 即时报告 ===== -->
+<div class="screen-block" id="h6">
+  <div class="screen-header">
+    <div><h2>H6 · 即时报告</h2><p>训练成绩 · AI建议 · 体感精灵数据 · 分享</p></div>
+    <span class="screen-id">SCREEN-H6</span>
+  </div>
+  <div class="screen-content">
+    <div class="device-frame">
+      <div class="device-chrome">
+        <div class="dc-dots"><div class="dc-dot"></div><div class="dc-dot"></div><div class="dc-dot"></div></div>
+        <span class="dc-label">AI运动盒子 · 居家版 v6.0</span>
+        <div class="dc-fairy-status"><div class="dc-fairy-dot"></div>体感精灵 已连接</div>
+      </div>
+      <div class="device-screen">
+        <div class="s-report">
+          <div class="report-header"><div class="rh-icon">🎉</div><div class="rh-title">训练完成</div></div>
+          <div class="report-core-grid">
+            <div class="report-metric"><div class="rm-value blue">28</div><div class="rm-label">完成次数 / 目标30</div></div>
+            <div class="report-metric"><div class="rm-value green">82%</div><div class="rm-label">动作达标率</div></div>
+            <div class="report-metric"><div class="rm-value orange">3:12</div><div class="rm-label">训练时长</div></div>
+          </div>
+          <div class="report-detail">
+            <div class="report-quality">
+              <div class="rq-title">📊 动作质量分析</div>
+              <div class="rq-bar-row"><span class="rq-bar-label">起身到位</span><div class="rq-bar-track"><div class="rq-bar-fill good" style="width:85%;"></div></div><span class="rq-bar-pct">85%</span></div>
+              <div class="rq-bar-row"><span class="rq-bar-label">下放触垫</span><div class="rq-bar-track"><div class="rq-bar-fill warn" style="width:68%;"></div></div><span class="rq-bar-pct">68%</span></div>
+              <div class="rq-bar-row"><span class="rq-bar-label">脖子代偿</span><div class="rq-bar-track"><div class="rq-bar-fill bad" style="width:23%;"></div></div><span class="rq-bar-pct">23%</span></div>
+              <div class="rq-bar-row"><span class="rq-bar-label">臀部离垫</span><div class="rq-bar-track"><div class="rq-bar-fill good" style="width:95%;"></div></div><span class="rq-bar-pct">5%</span></div>
+              <div style="margin-top:10px;padding:8px 12px;border-radius:8px;background:var(--fairy-bg);border:1px solid rgba(167,139,250,0.15);">
+                <div style="font-size:10px;color:var(--fairy);font-weight:600;">🧚 体感精灵数据</div>
+                <div style="font-size:9px;color:var(--text3);margin-top:4px;line-height:1.6;">平均心率 128 bpm · 最高 158 bpm<br>手部位置规范率 91% · 震动提醒 5次</div>
+              </div>
+            </div>
+            <div class="report-ai">
+              <div class="rai-title">🧠 AI教练建议</div>
+              <div class="rai-item">💪 下放触垫率偏低，建议慢速下放，感受脊柱逐节贴垫</div>
+              <div class="rai-item">📊 偶有脖子代偿，试着把下巴收向胸口，用腹部力量引导起身</div>
+              <div class="rai-item">🎯 以你目前能力，下次目标建议 32 个</div>
+              <div class="rai-item">💓 心率区间合理，训练强度适中，可尝试课程训练进阶</div>
+            </div>
+          </div>
+          <!-- v4修改：按钮改为手势提示 -->
+          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:10px 0;">
+            <div style="padding:6px 14px;border-radius:10px;background:rgba(0,229,204,0.06);border:1px solid rgba(0,229,204,0.2);font-size:10px;color:var(--accent);">✊ 握拳 → 继续训练</div>
+            <div style="padding:6px 14px;border-radius:10px;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.15);font-size:10px;color:var(--box-accent);">🤚 右挥手 → 查看数据</div>
+            <div style="padding:6px 14px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--border);font-size:10px;color:var(--text3);">📱 扫码 → 分享给家长</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-notes">
+      <div class="note-block"><h4>🔙 报告页操作说明 <span class="v3-tag">v4新增</span> &nbsp;·&nbsp; <a href="javascript:switchScreen('h7')" style="color:var(--box-accent);text-decoration:underline;">→ H7数据中心</a> &nbsp;·&nbsp; <a href="javascript:switchScreen('h3')" style="color:var(--box-accent);text-decoration:underline;">→ H3训练大厅</a></h4><ul><li>无触屏按钮，全部手势/扫码操作</li><li><strong>握拳</strong> → 继续训练（回H3）</li><li><strong>右挥手</strong> → 查看数据中心（H7）</li><li><strong>扫码</strong> → 手机端查看/分享完整报告</li></ul></div>
+      <div class="note-block"><h4>📊 报告内容说明</h4><ul><li>核心指标：完成次数（按项目计）、达标率、训练时长</li><li>动作质量：四维度分析（起身/下放/代偿/臀部）</li><li>AI建议：基于个人画像+动作数据生成</li><li>🆕 体感精灵数据：心率曲线摘要、手部位置规范率</li></ul></div>
+      <div class="note-block"><h4>📱 分享与推送</h4><ul><li>扫码分享：手机扫码查看完整报告H5</li><li>自动推送：训练完成 → 家长手机APP即时通知</li><li>周度报告：每周日自动生成 → 推送家长微信</li><li>数据同步：训练数据 → 校园教师后台</li></ul></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== H7: 数据中心 ===== -->
+<div class="screen-block" id="h7">
+  <div class="screen-header">
+    <div><h2>H7 · 个人数据中心</h2><p>训练历史 · 成长曲线 · 我的宠物 · 校园数据同步 <span class="v3-tag">v3修改</span></p></div>
+    <span class="screen-id">SCREEN-H7</span>
+  </div>
+  <div class="screen-content">
+    <div class="device-frame">
+      <div class="device-chrome">
+        <div class="dc-dots"><div class="dc-dot"></div><div class="dc-dot"></div><div class="dc-dot"></div></div>
+        <span class="dc-label">AI运动盒子 · 居家版 v6.0</span>
+        <div class="dc-fairy-status"><div class="dc-fairy-dot"></div>体感精灵 已连接</div>
+      </div>
+      <div class="device-screen">
+        <div class="s-data">
+          <div class="data-top">
+            <div style="font-size:10px;color:var(--text3);">🤚 左挥手 → 返回待机</div>
+            <div style="font-size:12px;font-weight:600;">张明轩 · 数据中心</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:36px;height:36px;background:white;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:6px;color:#333;flex-shrink:0;">
+                <div style="font-size:14px;">📱</div>
+              </div>
+              <div style="font-size:9px;color:var(--text3);line-height:1.4;">扫码查看<br>完整报告</div>
+            </div>
+          </div>
+          <!-- v3修改：H7个人数据中心 - 4个Tab完整展示 -->
+          <div class="dc-tabs" id="h7Tabs">
+            <div class="dc-tab active" onclick="switchH7Tab(0)">📊 训练历史</div>
+            <div class="dc-tab" onclick="switchH7Tab(1)">📈 成长曲线</div>
+            <div class="dc-tab" onclick="switchH7Tab(2)">🐉 我的宠物</div>
+            <div class="dc-tab" onclick="switchH7Tab(3)">🏫 校园数据</div>
+          </div>
+
+          <!-- TAB 0: 训练历史 -->
+          <div class="h7-panel" id="h7p0" style="display:block;">
+            <!-- v4修改：统计口径适配多项目 -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;">
+              <div class="report-metric"><div class="rm-value blue" style="font-size:22px;">12</div><div class="rm-label">本月训练次数</div></div>
+              <div class="report-metric"><div class="rm-value green" style="font-size:22px;">326</div><div class="rm-label">累计训练量</div></div>
+              <div class="report-metric"><div class="rm-value orange" style="font-size:22px;">78%</div><div class="rm-label">平均达标率</div></div>
+            </div>
+            <!-- 项目维度统计 -->
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+              <div style="flex:1;min-width:140px;padding:8px 10px;border-radius:8px;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.15);">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div style="font-size:10px;color:var(--text2);">🏋️ 仰卧起坐</div>
+                  <div style="font-size:9px;padding:1px 6px;border-radius:6px;background:rgba(0,229,204,0.15);color:var(--accent);">当前项目</div>
+                </div>
+                <div style="margin-top:4px;font-size:16px;font-weight:700;color:var(--box-accent);">326 <span style="font-size:9px;font-weight:400;color:var(--text3);">次</span></div>
+                <div style="font-size:8px;color:var(--text3);">计量单位：次（完成个数）</div>
+              </div>
+              <div style="flex:1;min-width:140px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border);opacity:0.5;">
+                <div style="font-size:10px;color:var(--text3);">🤸 跳绳</div>
+                <div style="margin-top:4px;font-size:16px;font-weight:700;color:var(--text3);">— <span style="font-size:9px;font-weight:400;">次</span></div>
+                <div style="font-size:8px;color:var(--text3);">计量单位：次（跳绳个数）· 即将上线</div>
+              </div>
+              <div style="flex:1;min-width:140px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border);opacity:0.5;">
+                <div style="font-size:10px;color:var(--text3);">🏃 立定跳远</div>
+                <div style="margin-top:4px;font-size:16px;font-weight:700;color:var(--text3);">— <span style="font-size:9px;font-weight:400;">cm</span></div>
+                <div style="font-size:8px;color:var(--text3);">计量单位：cm（跳远距离）· 即将上线</div>
+              </div>
+              <div style="flex:1;min-width:140px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border);opacity:0.5;">
+                <div style="font-size:10px;color:var(--text3);">👟 跑步</div>
+                <div style="margin-top:4px;font-size:16px;font-weight:700;color:var(--text3);">— <span style="font-size:9px;font-weight:400;">m</span></div>
+                <div style="font-size:8px;color:var(--text3);">计量单位：m（跑步距离）· 规划中</div>
+              </div>
+            </div>
+            <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:12px;">
+              <div style="font-size:11px;color:var(--text2);font-weight:600;margin-bottom:8px;">📅 最近7天训练</div>
+              <div style="display:flex;gap:8px;align-items:flex-end;height:72px;">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;height:60px;background:linear-gradient(0deg,var(--box-accent),rgba(56,189,248,0.3));border-radius:3px 3px 0 0;"></div><span style="font-size:8px;color:var(--text3);">周一</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;height:45px;background:linear-gradient(0deg,var(--box-accent),rgba(56,189,248,0.3));border-radius:3px 3px 0 0;"></div><span style="font-size:8px;color:var(--text3);">周二</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;height:4px;background:rgba(255,255,255,0.06);border-radius:3px 3px 0 0;"></div><span style="font-size:8px;color:var(--text3);">周三</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;height:55px;background:linear-gradient(0deg,var(--box-accent),rgba(56,189,248,0.3));border-radius:3px 3px 0 0;"></div><span style="font-size:8px;color:var(--text3);">周四</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;height:70px;background:linear-gradient(0deg,var(--box-accent),rgba(56,189,248,0.3));border-radius:3px 3px 0 0;"></div><span style="font-size:8px;color:var(--text3);">周五</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;height:40px;background:linear-gradient(0deg,var(--box-accent),rgba(56,189,248,0.3));border-radius:3px 3px 0 0;"></div><span style="font-size:8px;color:var(--text3);">周六</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><div style="width:100%;height:30px;background:linear-gradient(0deg,var(--fairy),rgba(167,139,250,0.3));border-radius:3px 3px 0 0;"></div><span style="font-size:8px;color:var(--text3);">今天</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 1: 成长曲线 -->
+          <div class="h7-panel" id="h7p1" style="display:none;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+              <!-- 仰卧起坐成绩趋势折线图 -->
+              <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:12px;">
+                <div style="font-size:10px;color:var(--text2);font-weight:600;margin-bottom:8px;">📈 仰卧起坐月成绩趋势</div>
+                <svg viewBox="0 0 200 80" style="width:100%;height:72px;">
+                  <defs><linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#38bdf8" stop-opacity="0.3"/><stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/></linearGradient></defs>
+                  <!-- 折线面积 -->
+                  <path d="M10,65 L42,52 L74,45 L106,38 L138,28 L170,20 L190,15 L190,80 L10,80 Z" fill="url(#lineGrad)"/>
+                  <!-- 折线 -->
+                  <polyline points="10,65 42,52 74,45 106,38 138,28 170,20 190,15" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-linejoin="round"/>
+                  <!-- 数据点 -->
+                  <circle cx="10" cy="65" r="2.5" fill="#38bdf8"/>
+                  <circle cx="74" cy="45" r="2.5" fill="#38bdf8"/>
+                  <circle cx="138" cy="28" r="2.5" fill="#38bdf8"/>
+                  <circle cx="190" cy="15" r="3" fill="#a78bfa" stroke="white" stroke-width="1"/>
+                  <!-- 标注 -->
+                  <text x="185" y="11" font-size="7" fill="#a78bfa" text-anchor="middle">42个</text>
+                  <text x="10" y="75" font-size="6" fill="#64748b" text-anchor="middle">1月</text>
+                  <text x="74" y="75" font-size="6" fill="#64748b" text-anchor="middle">3月</text>
+                  <text x="138" y="75" font-size="6" fill="#64748b" text-anchor="middle">5月</text>
+                  <text x="190" y="75" font-size="6" fill="#a78bfa" text-anchor="end">本月</text>
+                </svg>
+                <div style="font-size:9px;color:var(--text3);margin-top:4px;">半年增幅 <strong style="color:var(--success);">+67%</strong> · 超越同龄 <strong style="color:var(--box-accent);">83%</strong></div>
+              </div>
+              <!-- 能力雷达图（SVG近似） -->
+              <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:12px;">
+                <div style="font-size:10px;color:var(--text2);font-weight:600;margin-bottom:6px;">🕸️ 运动能力雷达图</div>
+                <div style="display:flex;align-items:center;justify-content:center;">
+                  <svg viewBox="0 0 120 110" style="width:110px;height:100px;">
+                    <!-- 五边形背景网格 -->
+                    <polygon points="60,8 106,38 90,90 30,90 14,38" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                    <polygon points="60,22 95,43 82,78 38,78 25,43" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                    <!-- 数据多边形（仰卧起坐高，其他项目暂未解锁） -->
+                    <polygon points="60,18 80,48 72,82 48,82 40,48" fill="rgba(167,139,250,0.15)" stroke="#a78bfa" stroke-width="1.5"/>
+                    <!-- 顶点标签 -->
+                    <text x="60" y="5" font-size="6.5" fill="#64748b" text-anchor="middle">核心力量</text>
+                    <text x="112" y="40" font-size="6.5" fill="#64748b" text-anchor="middle">有氧耐力</text>
+                    <text x="96" y="100" font-size="6.5" fill="#64748b" text-anchor="middle">爆发力</text>
+                    <text x="24" y="100" font-size="6.5" fill="#64748b" text-anchor="middle">协调性</text>
+                    <text x="8" y="40" font-size="6.5" fill="#64748b" text-anchor="middle">柔韧性</text>
+                    <!-- 中心点 -->
+                    <circle cx="60" cy="55" r="2" fill="#a78bfa"/>
+                  </svg>
+                </div>
+                <div style="font-size:9px;color:var(--text3);text-align:center;">解锁更多项目后雷达图自动扩展</div>
+              </div>
+            </div>
+            <!-- BMI趋势 -->
+            <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:10px;display:flex;gap:12px;align-items:center;">
+              <div style="font-size:24px;">⚖️</div>
+              <div style="flex:1;">
+                <div style="font-size:10px;font-weight:600;color:var(--text2);margin-bottom:4px;">BMI趋势 · 体型管理</div>
+                <div style="display:flex;gap:6px;align-items:center;">
+                  <div style="flex:1;height:6px;background:linear-gradient(90deg,rgba(56,189,248,0.4),var(--success));border-radius:3px;"></div>
+                  <span style="font-size:9px;color:var(--text3);">21.3 → 20.8</span>
+                </div>
+                <div style="font-size:9px;color:var(--text3);margin-top:3px;">近3个月 <strong style="color:var(--success);">−0.5</strong> · 健康范围内 · 建议保持</div>
+              </div>
+              <div style="font-size:18px;font-weight:700;color:var(--success);">20.8</div>
+            </div>
+          </div>
+
+          <!-- TAB 2: 我的宠物 -->
+          <div class="h7-panel" id="h7p2" style="display:none;">
+            <div style="display:flex;gap:12px;">
+              <!-- 宠物主体 -->
+              <div style="background:linear-gradient(135deg,rgba(167,139,250,0.1),rgba(56,189,248,0.05));border:1px solid rgba(167,139,250,0.25);border-radius:14px;padding:16px;flex:0 0 160px;display:flex;flex-direction:column;align-items:center;gap:8px;">
+                <div style="font-size:48px;filter:drop-shadow(0 0 8px rgba(167,139,250,0.5));">🐉</div>
+                <div style="font-size:11px;font-weight:700;color:var(--fairy);">小雷龙</div>
+                <div style="font-size:9px;color:var(--text3);">成长等级 <strong style="color:var(--fairy);">Lv.8</strong></div>
+                <!-- 满意度条 -->
+                <div style="width:100%;">
+                  <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text3);margin-bottom:3px;"><span>😊 心情</span><span>88/100</span></div>
+                  <div style="height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
+                    <div style="width:88%;height:100%;background:linear-gradient(90deg,#a78bfa,#38bdf8);border-radius:3px;"></div>
+                  </div>
+                </div>
+                <div style="width:100%;">
+                  <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text3);margin-bottom:3px;"><span>💪 体力</span><span>72/100</span></div>
+                  <div style="height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
+                    <div style="width:72%;height:100%;background:linear-gradient(90deg,var(--box-accent),var(--success));border-radius:3px;"></div>
+                  </div>
+                </div>
+                <div style="font-size:8px;color:var(--text3);text-align:center;margin-top:4px;">✨ 训练后喂养·积分兑换技能</div>
+              </div>
+              <!-- 宠物互动区 -->
+              <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+                <!-- 今日状态 -->
+                <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:10px;">
+                  <div style="font-size:10px;font-weight:600;color:var(--text2);margin-bottom:6px;">🌟 今日互动</div>
+                  <div style="font-size:9px;color:var(--text3);line-height:1.9;">
+                    <div>📅 今日未训练 · <strong style="color:var(--warning);">小雷龙有些无聊</strong></div>
+                    <div>🍖 今日喂食：2次 · 剩余积分：<strong style="color:var(--fairy);">680分</strong></div>
+                    <div>💬 "快去训练吧，我等着你回来！"</div>
+                  </div>
+                </div>
+                <!-- 进化路线 -->
+                <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:10px;">
+                  <div style="font-size:10px;font-weight:600;color:var(--text2);margin-bottom:6px;">🔮 成长路线</div>
+                  <div style="display:flex;align-items:center;gap:4px;font-size:10px;">
+                    <div style="text-align:center;opacity:0.5;"><div style="font-size:18px;">🥚</div><div style="font-size:8px;color:var(--text3);">蛋 Lv1</div></div>
+                    <div style="flex:1;height:2px;background:var(--success);opacity:0.5;border-radius:1px;"></div>
+                    <div style="text-align:center;opacity:0.5;"><div style="font-size:18px;">🐣</div><div style="font-size:8px;color:var(--text3);">幼龙 Lv3</div></div>
+                    <div style="flex:1;height:2px;background:var(--success);opacity:0.5;border-radius:1px;"></div>
+                    <div style="text-align:center;border:1px solid var(--fairy);border-radius:8px;padding:2px 6px;"><div style="font-size:18px;">🐉</div><div style="font-size:8px;color:var(--fairy);">成龙 Lv8</div></div>
+                    <div style="flex:1;height:2px;background:rgba(255,255,255,0.08);border-radius:1px;"></div>
+                    <div style="text-align:center;opacity:0.3;"><div style="font-size:18px;">🔥</div><div style="font-size:8px;color:var(--text3);">神龙 Lv20</div></div>
+                  </div>
+                </div>
+                <!-- 积分说明 -->
+                <div style="background:rgba(255,171,0,0.05);border:1px solid rgba(255,171,0,0.15);border-radius:10px;padding:8px 10px;font-size:9px;color:var(--text3);line-height:1.7;">
+                  <strong style="color:var(--warning);">积分规则：</strong> 每完成1次有效动作得1分（仰卧起坐=个/跳绳=个/跳远=cm/跑步=m）· 达到今日目标额外奖励50分 · 连续打卡天数×10分/天<br>
+                  积分可喂养宠物、兑换表情包、解锁运动挑战赛资格
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 3: 校园数据 -->
+          <div class="h7-panel" id="h7p3" style="display:none;">
+            <!-- 校园同步状态 -->
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(0,229,204,0.05);border:1px solid rgba(0,229,204,0.2);border-radius:10px;margin-bottom:10px;">
+              <div style="font-size:20px;">🏫</div>
+              <div style="flex:1;">
+                <div style="font-size:10px;font-weight:600;color:var(--accent);">南山实验中学 · 高二(3)班</div>
+                <div style="font-size:9px;color:var(--text3);">数据同步 · 最近更新：昨天 18:32</div>
+              </div>
+              <div style="font-size:9px;padding:3px 8px;border-radius:10px;background:rgba(0,229,204,0.15);color:var(--accent);">✓ 已同步</div>
+            </div>
+            <!-- 体测成绩对照 -->
+            <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;">
+              <div style="font-size:10px;font-weight:600;color:var(--text2);margin-bottom:8px;">📋 体测成绩 · 居家训练对照</div>
+              <table style="width:100%;border-collapse:collapse;font-size:9px;">
+                <thead>
+                  <tr style="color:var(--text3);">
+                    <td style="padding:4px 6px;">项目</td>
+                    <td style="padding:4px 6px;text-align:center;">上次体测</td>
+                    <td style="padding:4px 6px;text-align:center;">本次预估</td>
+                    <td style="padding:4px 6px;text-align:center;">变化</td>
+                    <td style="padding:4px 6px;text-align:center;">评级</td>
+                  </tr>
+                </thead>
+                <tbody style="color:var(--text2);">
+                  <tr style="border-top:1px solid var(--border);">
+                    <td style="padding:5px 6px;">仰卧起坐/分钟</td>
+                    <td style="padding:5px 6px;text-align:center;">34个</td>
+                    <td style="padding:5px 6px;text-align:center;color:var(--success);">42个</td>
+                    <td style="padding:5px 6px;text-align:center;color:var(--success);">+8</td>
+                    <td style="padding:5px 6px;text-align:center;"><span style="background:rgba(0,229,204,0.15);color:var(--accent);padding:1px 5px;border-radius:4px;">良好</span></td>
+                  </tr>
+                  <tr style="border-top:1px solid var(--border);opacity:0.5;">
+                    <td style="padding:5px 6px;">跑步（800m）</td>
+                    <td style="padding:5px 6px;text-align:center;">3'45"</td>
+                    <td style="padding:5px 6px;text-align:center;color:var(--text3);">— 未训练</td>
+                    <td style="padding:5px 6px;text-align:center;color:var(--text3);">—</td>
+                    <td style="padding:5px 6px;text-align:center;"><span style="background:rgba(255,255,255,0.05);color:var(--text3);padding:1px 5px;border-radius:4px;">中等</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- 教师评价 -->
+            <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:10px;display:flex;gap:10px;align-items:flex-start;">
+              <div style="font-size:22px;">👨‍🏫</div>
+              <div style="flex:1;">
+                <div style="font-size:10px;font-weight:600;color:var(--text2);margin-bottom:4px;">李老师 · 最近评语</div>
+                <div style="font-size:9px;color:var(--text3);line-height:1.7;font-style:italic;">"明轩这周居家训练很努力，仰卧起坐成绩提升明显！建议下周加强核心力量稳定性训练。"</div>
+                <div style="font-size:8px;color:var(--text3);margin-top:4px;">2026-06-08 · 体育课后</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-notes">
+      <div class="note-block"><h4>📊 数据中心功能 <span class="v3-tag">v4修改</span> &nbsp;·&nbsp; <a href="javascript:switchScreen('h1')" style="color:var(--box-accent);text-decoration:underline;">→ H1待机首页</a></h4><ul><li>训练历史：按日/周/月查看训练记录</li><li><strong>v4统计口径</strong>：不同项目使用不同计量单位（仰卧起坐=次/跳绳=次/跳远=cm/跑步=m），汇总维度为"累计训练量"</li><li>成长曲线：达标率趋势、能力雷达图</li><li>宠物养成：运动积分喂养虚拟宠物（积分规则适配多项目）</li><li>校园数据：同步学校体测成绩、教师评价</li></ul></div>
+      <div class="note-block"><h4>📱 扫码扩展</h4><ul><li>电视端仅展示概要，扫码手机查看完整版</li><li>手机端：详细报告、历史对比、家长分享</li><li>数据双向同步：校园训练↔居家训练</li></ul></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main-area -->
+</div><!-- /prototype-shell -->
+
+<!-- ===== GESTURE LEGEND ===== -->
+<div style="padding:32px;max-width:1000px;margin:0 auto;">
+<div class="gesture-legend">
+  <h4>👋 手势交互规范 · 居家版 v1.0</h4>
+  <div class="gesture-grid">
+    <div class="gg-item"><span class="gg-icon">👋</span><div class="gg-label"><strong>左右挥手</strong><span>切换选项/导航</span></div></div>
+    <div class="gg-item"><span class="gg-icon">✊</span><div class="gg-label"><strong>握拳确认</strong><span>优势手握拳静止1秒<br>摄像头捕捉手部闭合</span></div></div>
+    <div class="gg-item"><span class="gg-icon">🖐️</span><div class="gg-label"><strong>张掌退出</strong><span>返回上一级/取消</span></div></div>
+    <div class="gg-item fairy-gesture"><span class="gg-icon">🧚</span><div class="gg-label"><strong>长按精灵</strong><span>暂停/恢复训练</span></div></div>
+    <div class="gg-item fairy-gesture"><span class="gg-icon">🧚</span><div class="gg-label"><strong>双击精灵</strong><span>结束训练（二次确认）</span></div></div>
+    <div class="gg-item fairy-gesture"><span class="gg-icon">🧚📳</span><div class="gg-label"><strong>震动1次</strong><span>计数确认/动作到位</span></div></div>
+    <div class="gg-item fairy-gesture"><span class="gg-icon">🧚📳📳</span><div class="gg-label"><strong>震动2次</strong><span>动作纠错提醒</span></div></div>
+    <div class="gg-item"><span class="gg-icon">📱</span><div class="gg-label"><strong>扫码操作</strong><span>文字输入/注册/分享</span></div></div>
+  </div>
+</div>
+
+<!-- ===== COMPARISON TABLE ===== -->
+<div class="compare-section" style="margin-top:20px;">
+  <h3>🔄 校园版 vs 居家版 核心差异对照</h3>
+  <table class="compare-table">
+    <thead><tr><th>对比维度</th><th>校园触控一体机 (campus_v5)</th><th>居家运动盒子+电视 (home_v1)</th></tr></thead>
+    <tbody>
+      <tr><td>显示设备</td><td>触控一体机（自带屏幕+触控）</td><td class="highlight">外接家用电视/显示器（无触控）</td></tr>
+      <tr><td>核心输入</td><td>触控 + 手势</td><td class="highlight">手势 + 体感精灵 + 扫码</td></tr>
+      <tr><td>确认手势</td><td>🖐️ 张开手掌</td><td class="highlight">✊ 握拳（更自然）</td></tr>
+      <tr><td>文字输入</td><td>触控键盘</td><td class="highlight">📱 手机扫码填写</td></tr>
+      <tr><td>可穿戴设备</td><td>蓝牙手环/手表（可选）</td><td class="highlight">体感精灵（标配，功能更强）</td></tr>
+      <tr><td>暂停训练</td><td>走回屏幕点击暂停</td><td class="highlight">🧚 长按体感精灵（原地操作）</td></tr>
+      <tr><td>结束训练</td><td>屏幕点击结束</td><td class="highlight">🧚 双击体感精灵（二次确认）</td></tr>
+      <tr><td>触觉反馈</td><td>无</td><td class="highlight">体感精灵震动编码（1/2/3次）</td></tr>
+      <tr><td>多人模式</td><td>班级PK（2~4人同屏）</td><td class="highlight">暂无（后续增加亲子PK）</td></tr>
+      <tr><td>用户切换</td><td>人脸识别自动切换</td><td class="highlight">人脸识别 + 📱扫码快速切换</td></tr>
+      <tr><td>数据推送</td><td>教师后台</td><td class="highlight">家长手机APP + 教师后台</td></tr>
+      <tr><td>项目扩展</td><td>4项（仰卧起坐/跳绳/跳远/跑步）</td><td class="highlight">4项+体感游戏+热身训练</td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+<a href="#" class="back-home" onclick="switchScreen('h0');return false;">↑ 回到顶部</a>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+function switchScreen(id) {
+  document.querySelectorAll('.screen-block').forEach(function(el) { el.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(el) { el.classList.remove('active'); });
+  var target = document.getElementById(id);
+  if (target) target.classList.add('active');
+  var navLink = document.querySelector('.nav-item[href="#' + id + '"]');
+  if (navLink) navLink.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ===== TARGET SELECTION =====
+function selectTarget(el) {
+  el.parentElement.querySelectorAll('.target-option').forEach(function(t) { t.classList.remove('selected'); });
+  el.classList.add('selected');
+}
+
+// ===== H5 PROMPT PANEL =====
+function showH5Prompt(type) {
+  var panel = document.getElementById('h5PromptPanel');
+  if (!panel) return;
+  var configs = {
+    oob: {
+      bg: 'rgba(255,82,82,0.08)',
+      border: '1px solid rgba(255,82,82,0.25)',
+      color: '#ff5252',
+      html: '<div style="font-weight:600;margin-bottom:4px;">🔴 动作出界提示</div>' +
+            '<div>检测到用户身体偏离摄像头有效区域</div>' +
+            '<div style="margin-top:4px;display:flex;gap:8px;align-items:center;">' +
+            '<div style="padding:6px 12px;border-radius:8px;background:rgba(255,82,82,0.12);border:1px solid rgba(255,82,82,0.3);font-size:10px;">⚠️ 请回到摄像头范围内</div>' +
+            '<div style="font-size:9px;color:#ff5252;">🧚 震动3次 + 语音提醒</div></div>' +
+            '<div style="margin-top:4px;font-size:9px;opacity:0.7;">触发条件：骨骼关键点超出画面安全区80%范围</div>'
+    },
+    pace: {
+      bg: 'rgba(255,193,7,0.08)',
+      border: '1px solid rgba(255,193,7,0.25)',
+      color: '#ffc107',
+      html: '<div style="font-weight:600;margin-bottom:4px;">🟡 节奏偏快提示</div>' +
+            '<div>检测到动作节奏明显快于个人基线</div>' +
+            '<div style="margin-top:4px;display:flex;gap:8px;align-items:center;">' +
+            '<div style="padding:6px 12px;border-radius:8px;background:rgba(255,193,7,0.12);border:1px solid rgba(255,193,7,0.3);font-size:10px;">🐢 放慢节奏，保持稳定</div>' +
+            '<div style="font-size:9px;color:#ffc107;">🧚 震动2次短震</div></div>' +
+            '<div style="margin-top:4px;font-size:9px;opacity:0.7;">触发条件：连续3个动作间隔 < 个人基线×0.6</div>'
+    },
+    rest: {
+      bg: 'rgba(76,175,80,0.08)',
+      border: '1px solid rgba(76,175,80,0.25)',
+      color: '#4caf50',
+      html: '<div style="font-weight:600;margin-bottom:4px;">🟢 休息建议提示</div>' +
+            '<div>检测到疲劳指标上升，建议适当休息</div>' +
+            '<div style="margin-top:4px;display:flex;gap:8px;align-items:center;">' +
+            '<div style="padding:6px 12px;border-radius:8px;background:rgba(76,175,80,0.12);border:1px solid rgba(76,175,80,0.3);font-size:10px;">💤 建议休息15秒</div>' +
+            '<div style="font-size:9px;color:#4caf50;">🧚 震动1次长震</div></div>' +
+            '<div style="margin-top:4px;font-size:9px;opacity:0.7;">触发条件：心率持续>150bpm超30秒 或 动作质量连续3次降级</div>'
+    },
+    count: {
+      bg: 'rgba(56,189,248,0.08)',
+      border: '1px solid rgba(56,189,248,0.25)',
+      color: 'var(--box-accent)',
+      html: '<div style="font-weight:600;margin-bottom:4px;">🔵 计数修正提示</div>' +
+            '<div>动作幅度不足，未计入本次成绩</div>' +
+            '<div style="margin-top:4px;display:flex;gap:8px;align-items:center;">' +
+            '<div style="padding:6px 12px;border-radius:8px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.3);font-size:10px;">↩️ 起身幅度不够，不计入</div>' +
+            '<div style="font-size:9px;color:var(--box-accent);">🧚 震动2次 + 屏幕不计数</div></div>' +
+            '<div style="margin-top:4px;font-size:9px;opacity:0.7;">触发条件：肩髋夹角 > 设定阈值（如>110°视为未到位）</div>'
+    },
+    motivate: {
+      bg: 'rgba(167,139,250,0.08)',
+      border: '1px solid rgba(167,139,250,0.25)',
+      color: 'var(--fairy)',
+      html: '<div style="font-weight:600;margin-bottom:4px;">🟣 激励鼓励提示</div>' +
+            '<div>关键节点到达，给予正面反馈</div>' +
+            '<div style="margin-top:4px;display:flex;gap:8px;align-items:center;">' +
+            '<div style="padding:6px 12px;border-radius:8px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);font-size:10px;">💪 已完成2/3！继续加油！</div>' +
+            '<div style="font-size:9px;color:var(--fairy);">🧚 震动1次 + 屏幕彩带特效</div></div>' +
+            '<div style="margin-top:4px;font-size:9px;opacity:0.7;">触发条件：完成目标50%/75%/90%时自动触发</div>'
+    }
+  };
+  var cfg = configs[type];
+  if (!cfg) return;
+  if (panel.style.display === 'block' && panel.getAttribute('data-type') === type) {
+    panel.style.display = 'none';
+    panel.setAttribute('data-type', '');
+    return;
+  }
+  panel.style.display = 'block';
+  panel.style.background = cfg.bg;
+  panel.style.border = cfg.border;
+  panel.style.color = cfg.color;
+  panel.innerHTML = cfg.html;
+  panel.setAttribute('data-type', type);
+}
+
+// ===== COLD START =====
+function coldNextStep(step) {
+  document.querySelectorAll('.cold-step-block').forEach(function(el) { el.classList.add('hidden'); });
+  var block = document.getElementById('coldBlock' + step);
+  if (block) block.classList.remove('hidden');
+}
+function coldPrevStep(step) {
+  document.querySelectorAll('.cold-step-block').forEach(function(el) { el.classList.add('hidden'); });
+  var block = document.getElementById('coldBlock' + step);
+  if (block) block.classList.remove('hidden');
+}
+
+// ===== PAUSE =====
+function showPause() {
+  var overlay = document.getElementById('pauseOverlay');
+  if (overlay) overlay.classList.add('show');
+}
+function hidePause() {
+  var overlay = document.getElementById('pauseOverlay');
+  if (overlay) overlay.classList.remove('show');
+}
+
+// ===== H7 TAB SWITCH =====
+function switchH7Tab(idx) {
+  document.querySelectorAll('#h7Tabs .dc-tab').forEach(function(t, i) {
+    t.classList.toggle('active', i === idx);
+  });
+  document.querySelectorAll('.h7-panel').forEach(function(p, i) {
+    p.style.display = i === idx ? 'block' : 'none';
+  });
+}
+
+// ===== WiFi panel toggle (v2 legacy - kept for compatibility) =====
+function toggleWifiPanel() {
+  var panel = document.getElementById('wifiPanel');
+  if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+
+</body>
+</html>
