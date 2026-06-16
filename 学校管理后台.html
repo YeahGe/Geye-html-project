@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学校管理后台 · AI体育教练</title>
+<style>
+:root {
+  --primary: #31CD57;
+  --primary-dark: #1a8a33;
+  --primary-glow: rgba(49,205,87,0.25);
+  --accent: #22a846;
+  --accent-glow: rgba(34,168,70,0.2);
+  --gold: #d4a017;
+  --error: #d32f2f;
+  --warning: #e67e00;
+  --info: #1976d2;
+  --bg: #f0f2f5;
+  --bg-white: #ffffff;
+  --bg-card: #f8f9fb;
+  --border: rgba(0,0,0,0.08);
+  --border-light: rgba(0,0,0,0.05);
+  --text: #1a1a2e;
+  --text-secondary: rgba(26,26,46,0.65);
+  --text-tertiary: rgba(26,26,46,0.40);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
+  --sidebar-w: 240px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  width:100%; height:100%; overflow:hidden;
+  font-family: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  background: var(--bg); color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== LAYOUT ===== */
+.app-layout { display:flex; height:100vh; }
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: var(--sidebar-w); min-width: var(--sidebar-w); height:100vh;
+  background: var(--bg-white); border-right: 1px solid var(--border);
+  display:flex; flex-direction:column; overflow-y:auto; z-index:100;
+}
+.sidebar::-webkit-scrollbar { width:4px; }
+.sidebar::-webkit-scrollbar-thumb { background:rgba(0,0,0,0.08); border-radius:2px; }
+
+.sidebar-brand {
+  padding:20px 18px 16px; border-bottom:1px solid var(--border);
+}
+.sidebar-brand .sb-logo {
+  display:flex; align-items:center; gap:10px; margin-bottom:6px;
+}
+.sidebar-brand .sb-logo-icon {
+  width:36px; height:36px; border-radius:10px;
+  background:linear-gradient(135deg, var(--primary), var(--accent));
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; color:#fff; flex-shrink:0;
+}
+.sidebar-brand .sb-name { font-size:15px; font-weight:700; color:var(--text); }
+.sidebar-brand .sb-sub { font-size:11px; color:var(--text-tertiary); margin-top:4px; padding-left:46px; }
+.sidebar-brand .sb-school {
+  font-size:11px; color:var(--primary); font-weight:600; margin-top:8px; padding-left:46px;
+  display:flex; align-items:center; gap:4px;
+}
+
+.sidebar-nav { padding:10px 0; flex:1; }
+.nav-section { padding: 6px 18px 4px; font-size:10px; font-weight:600; color:var(--text-tertiary); letter-spacing:1px; text-transform:uppercase; }
+.nav-item {
+  display:flex; align-items:center; gap:8px; padding:9px 18px; font-size:13px;
+  color:var(--text-secondary); cursor:pointer; transition:all 0.15s;
+  border-left:2px solid transparent; text-decoration:none;
+  margin:1px 0;
+}
+.nav-item:hover { color:var(--text); background:rgba(0,0,0,0.03); }
+.nav-item.active { color:var(--primary); border-left-color:var(--primary); background:rgba(49,205,87,0.06); font-weight:600; }
+.nav-item .ni-badge {
+  margin-left:auto; font-size:9px; padding:1px 7px; border-radius:8px;
+  background:rgba(34,168,70,0.12); color:var(--accent); font-weight:600;
+}
+
+.sidebar-footer {
+  padding:14px 18px; border-top:1px solid var(--border);
+  display:flex; align-items:center; gap:8px;
+}
+.sidebar-footer .sf-avatar {
+  width:32px; height:32px; border-radius:8px;
+  background:linear-gradient(135deg, var(--gold), #b8860b);
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; color:#fff; flex-shrink:0;
+}
+.sidebar-footer .sf-info { flex:1; min-width:0; }
+.sidebar-footer .sf-name { font-size:12px; font-weight:600; }
+.sidebar-footer .sf-role { font-size:10px; color:var(--text-tertiary); }
+
+/* ===== MAIN ===== */
+.main-area { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+
+/* ===== TOP BAR ===== */
+.top-bar {
+  background:var(--bg-white); border-bottom:1px solid var(--border);
+  padding:0 28px; height:56px; display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0;
+}
+.top-bar .tb-left { display:flex; align-items:center; gap:12px; }
+.top-bar .tb-title { font-size:16px; font-weight:700; }
+.top-bar .tb-breadcrumb { font-size:11px; color:var(--text-tertiary); }
+.top-bar .tb-right { display:flex; align-items:center; gap:12px; }
+.top-bar .tb-time { font-size:11px; color:var(--text-tertiary); }
+
+/* ===== CONTENT ===== */
+.content-area {
+  flex:1; overflow-y:auto; padding:24px 28px 32px;
+  display:flex; flex-direction:column; gap:20px;
+}
+.content-area::-webkit-scrollbar { width:5px; }
+.content-area::-webkit-scrollbar-thumb { background:rgba(0,0,0,0.08); border-radius:3px; }
+
+/* ===== STATS ROW ===== */
+.stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+.stat-card {
+  background:var(--bg-white); border-radius:var(--radius-md); padding:18px 20px;
+  box-shadow:var(--shadow-sm); border:1px solid var(--border-light);
+  transition:all 0.2s;
+}
+.stat-card:hover { box-shadow:var(--shadow-md); transform:translateY(-1px); }
+.stat-card .sc-icon { font-size:28px; margin-bottom:8px; }
+.stat-card .sc-val { font-size:28px; font-weight:800; line-height:1; }
+.stat-card .sc-val.primary { color:var(--primary); }
+.stat-card .sc-val.accent { color:var(--accent); }
+.stat-card .sc-val.gold { color:var(--gold); }
+.stat-card .sc-val.info { color:var(--info); }
+.stat-card .sc-lbl { font-size:11px; color:var(--text-tertiary); margin-top:4px; }
+
+/* ===== SECTION HEADER ===== */
+.section-header {
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;
+}
+.section-header .sh-title {
+  font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px;
+}
+.section-header .sh-hint { font-size:11px; color:var(--text-secondary); font-weight:400; }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display:inline-flex; align-items:center; gap:6px; padding:8px 18px;
+  border-radius:20px; font-size:12px; font-weight:600; cursor:pointer;
+  border:none; transition:all 0.2s; font-family:inherit; white-space:nowrap;
+}
+.btn-primary {
+  background:linear-gradient(135deg, var(--primary), var(--accent));
+  color:#fff; box-shadow:0 2px 8px var(--primary-glow);
+}
+.btn-primary:hover { box-shadow:0 4px 16px var(--primary-glow); transform:translateY(-1px); }
+.btn-outline {
+  background:var(--bg-white); color:var(--primary);
+  border:1.5px solid rgba(49,205,87,0.3);
+}
+.btn-outline:hover { background:rgba(49,205,87,0.05); border-color:var(--primary); }
+.btn-ghost {
+  background:transparent; color:var(--text-secondary);
+}
+.btn-ghost:hover { background:rgba(0,0,0,0.04); color:var(--text); }
+.btn-sm { padding:5px 12px; font-size:11px; border-radius:14px; }
+.btn-danger { color:var(--error); border-color:rgba(211,47,47,0.25); }
+.btn-danger:hover { background:rgba(211,47,47,0.05); border-color:var(--error); }
+.btn-xs { padding:2px 8px; font-size:10px; border-radius:10px; }
+
+/* ===== PROJECT CARD ===== */
+.project-card {
+  background:var(--bg-white); border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-sm); border:1.5px solid var(--border-light);
+  overflow:hidden; transition:all 0.25s;
+}
+.project-card:hover { box-shadow:var(--shadow-md); }
+.project-card-header {
+  display:flex; align-items:center; gap:14px; padding:16px 20px;
+  cursor:pointer; transition:background 0.15s;
+}
+.project-card-header:hover { background:rgba(49,205,87,0.02); }
+.project-card.expanded .project-card-header { border-bottom:1px solid var(--border-light); }
+.pch-icon {
+  width:48px; height:48px; border-radius:12px;
+  background:linear-gradient(135deg, rgba(49,205,87,0.1), rgba(34,168,70,0.05));
+  display:flex; align-items:center; justify-content:center;
+  font-size:26px; flex-shrink:0;
+}
+.pch-info { flex:1; min-width:0; }
+.pch-name { font-size:15px; font-weight:700; }
+.pch-meta { font-size:11px; color:var(--text-secondary); margin-top:2px; }
+.pch-stats { display:flex; gap:16px; flex-shrink:0; }
+.pch-stat { text-align:center; }
+.pch-stat .ps-val { font-size:16px; font-weight:700; color:var(--primary); }
+.pch-stat .ps-lbl { font-size:10px; color:var(--text-tertiary); }
+.pch-expand {
+  font-size:12px; color:var(--text-tertiary); transition:transform 0.25s;
+}
+.project-card.expanded .pch-expand { transform:rotate(180deg); }
+.pch-actions { display:flex; gap:6px; flex-shrink:0; }
+
+/* ===== UNIT SECTION ===== */
+.project-card-body { display:none; padding:0 20px 20px; }
+.project-card.expanded .project-card-body { display:block; }
+.unit-list { display:flex; flex-direction:column; gap:12px; }
+
+.unit-card {
+  background:var(--bg-card); border-radius:var(--radius-md);
+  border:1px solid var(--border-light); overflow:hidden;
+}
+.unit-card-header {
+  display:flex; align-items:center; gap:10px; padding:12px 16px;
+  border-bottom:1px solid var(--border-light);
+}
+.unit-card-header .uh-dot {
+  width:8px; height:8px; border-radius:50%; background:var(--primary); flex-shrink:0;
+}
+.unit-card-header .uh-name { font-size:13px; font-weight:600; flex:1; }
+.unit-card-header .uh-count { font-size:11px; color:var(--text-tertiary); }
+.unit-card-header .uh-actions { display:flex; gap:4px; }
+.unit-sessions { padding:8px 16px 12px; }
+.session-row {
+  display:flex; align-items:center; gap:10px; padding:10px 12px;
+  border-radius:var(--radius-sm); transition:background 0.15s;
+}
+.session-row:hover { background:rgba(0,0,0,0.02); }
+.session-num {
+  width:28px; height:28px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg, rgba(49,205,87,0.12), rgba(34,168,70,0.06));
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; color:var(--primary);
+}
+.session-info { flex:1; min-width:0; }
+.session-name { font-size:12px; font-weight:600; }
+.session-desc { font-size:10px; color:var(--text-tertiary); margin-top:2px; }
+.session-params {
+  display:flex; gap:6px; margin-top:4px; flex-wrap:wrap;
+}
+.session-params .sp-chip {
+  display:inline-flex; align-items:center; gap:3px;
+  font-size:10px; font-weight:600; padding:2px 8px; border-radius:8px;
+  white-space:nowrap;
+}
+.sp-chip.sp-main { background:rgba(49,205,87,0.08); color:var(--primary-dark); }
+.sp-chip.sp-sets { background:rgba(212,160,23,0.08); color:#9a7a12; }
+.sp-chip.sp-rest { background:rgba(25,118,210,0.06); color:var(--info); }
+.sp-chip.sp-none { background:rgba(0,0,0,0.03); color:var(--text-tertiary); }
+.session-actions { display:flex; gap:4px; flex-shrink:0; }
+.session-actions .btn-ghost { padding:3px 8px; font-size:10px; opacity:0; transition:opacity 0.15s; }
+.session-row:hover .session-actions .btn-ghost { opacity:1; }
+
+/* Add inline */
+.add-inline {
+  display:flex; align-items:center; gap:8px; padding:10px 16px;
+  border-top:1px dashed var(--border-light); cursor:pointer;
+  color:var(--text-tertiary); font-size:12px; transition:all 0.15s;
+}
+.add-inline:hover { color:var(--primary); background:rgba(49,205,87,0.03); }
+
+.add-project-card {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  padding:24px; border:2px dashed rgba(49,205,87,0.25);
+  border-radius:var(--radius-lg); cursor:pointer;
+  color:var(--text-tertiary); font-size:13px; font-weight:600;
+  background:rgba(49,205,87,0.02); transition:all 0.2s;
+}
+.add-project-card:hover {
+  border-color:var(--primary); color:var(--primary);
+  background:rgba(49,205,87,0.05);
+}
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  display:none; position:fixed; inset:0; z-index:500;
+  background:rgba(0,0,0,0.35); align-items:center; justify-content:center;
+  animation:fadeIn 0.2s ease-out;
+}
+.modal-overlay.show { display:flex; }
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+.modal-dialog {
+  background:var(--bg-white); border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-lg); width:520px; max-width:calc(100vw - 40px);
+  max-height:85vh; overflow-y:auto; animation:slideUp 0.25s ease-out;
+}
+@keyframes slideUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+.modal-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 24px; border-bottom:1px solid var(--border-light);
+}
+.modal-header .mh-title { font-size:16px; font-weight:700; }
+.modal-header .mh-close {
+  width:28px; height:28px; border-radius:50%; border:none;
+  background:rgba(0,0,0,0.04); cursor:pointer; font-size:14px;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--text-secondary); transition:all 0.15s;
+}
+.modal-header .mh-close:hover { background:rgba(0,0,0,0.08); color:var(--text); }
+.modal-body { padding:20px 24px; display:flex; flex-direction:column; gap:16px; }
+.modal-footer {
+  display:flex; justify-content:flex-end; gap:10px; padding:16px 24px;
+  border-top:1px solid var(--border-light);
+}
+
+/* ===== FORM ===== */
+.form-group { display:flex; flex-direction:column; gap:6px; }
+.form-label { font-size:12px; font-weight:600; color:var(--text-secondary); }
+.form-hint { font-size:10px; color:var(--text-tertiary); }
+.form-input, .form-select, .form-textarea {
+  padding:10px 14px; border-radius:var(--radius-sm); border:1.5px solid var(--border);
+  font-size:13px; font-family:inherit; color:var(--text); background:var(--bg-white);
+  transition:border-color 0.2s, box-shadow 0.2s; outline:none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color:var(--primary); box-shadow:0 0 0 3px rgba(49,205,87,0.1);
+}
+.form-textarea { resize:vertical; min-height:60px; }
+.form-select { cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%23999'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+.form-input-unit {
+  display:flex; align-items:stretch; border-radius:var(--radius-sm); overflow:hidden;
+}
+.form-input-unit input {
+  flex:1; padding:10px 14px; border:1.5px solid var(--border); border-right:none;
+  border-radius:var(--radius-sm) 0 0 var(--radius-sm); font-size:13px; font-family:inherit;
+  color:var(--text); outline:none; transition:border-color 0.2s;
+}
+.form-input-unit input:focus { border-color:var(--primary); }
+.form-input-unit .fiu-suffix {
+  display:flex; align-items:center; padding:0 14px;
+  background:var(--bg-card); border:1.5px solid var(--border); border-left:none;
+  border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+  font-size:12px; font-weight:600; color:var(--text-secondary);
+  white-space:nowrap;
+}
+
+/* Project measure unit selector in modal */
+.measure-type-info {
+  display:flex; align-items:center; gap:8px; padding:8px 12px;
+  background:rgba(49,205,87,0.04); border-radius:var(--radius-sm);
+  font-size:11px; color:var(--text-secondary);
+}
+.measure-type-info .mti-icon { font-size:16px; }
+
+.icon-option-list { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; }
+.icon-option {
+  width:100%; aspect-ratio:1; border-radius:var(--radius-sm);
+  border:2px solid var(--border-light); cursor:pointer; font-size:24px;
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.15s; background:var(--bg-white);
+}
+.icon-option:hover { border-color:rgba(49,205,87,0.3); background:rgba(49,205,87,0.04); }
+.icon-option.selected { border-color:var(--primary); background:rgba(49,205,87,0.08); }
+
+/* ===== EMPTY STATE ===== */
+.empty-state { text-align:center; padding:40px 20px; }
+.empty-state .es-icon { font-size:48px; margin-bottom:12px; }
+.empty-state .es-title { font-size:15px; font-weight:700; color:var(--text-secondary); margin-bottom:4px; }
+.empty-state .es-desc { font-size:12px; color:var(--text-tertiary); margin-bottom:16px; }
+
+/* ===== TAG / CHIP ===== */
+.tag {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:10px; padding:2px 8px; border-radius:10px; font-weight:600;
+}
+.tag-green { background:rgba(49,205,87,0.1); color:#31CD57; }
+.tag-blue { background:rgba(25,118,210,0.08); color:var(--info); }
+.tag-gold { background:rgba(212,160,23,0.1); color:var(--gold); }
+.tag-gray { background:rgba(0,0,0,0.05); color:var(--text-tertiary); }
+
+/* ===== TOAST ===== */
+.toast {
+  position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:1000;
+  padding:10px 24px; border-radius:20px; font-size:13px; font-weight:600;
+  background:var(--text); color:#fff; box-shadow:var(--shadow-lg);
+  animation:toastIn 0.3s ease-out; pointer-events:none;
+}
+@keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-10px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
+.toast.success { background:linear-gradient(135deg,var(--primary),var(--accent)); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .sidebar { width:60px; min-width:60px; }
+  .sidebar-brand .sb-name, .sidebar-brand .sb-sub, .sidebar-brand .sb-school,
+  .nav-item span:not(.ni-badge), .nav-section, .sidebar-footer .sf-info { display:none; }
+  .nav-item { justify-content:center; padding:10px; }
+  .sidebar-brand .sb-logo-icon { margin:0 auto; }
+  .sidebar-brand { padding:16px 10px; display:flex; justify-content:center; }
+  .sidebar-brand .sb-logo { justify-content:center; }
+  .stats-row { grid-template-columns:repeat(2,1fr); }
+}
+@media (max-width: 640px) {
+  .sidebar { display:none; }
+  .stats-row { grid-template-columns:1fr; }
+  .top-bar { padding:0 16px; }
+  .content-area { padding:16px; }
+  .pch-stats { display:none; }
+  .form-row, .form-row-3 { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sb-logo">
+        <div class="sb-logo-icon">🏫</div>
+        <span class="sb-name">AI体育教练</span>
+      </div>
+      <div class="sb-sub">学校管理后台 v2.0</div>
+      <div class="sb-school" id="sidebarSchool">📍 上海实验中学</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">管理菜单</div>
+      <a class="nav-item active" data-nav="dashboard" onclick="switchNav('dashboard')">
+        📊 <span>工作台</span>
+      </a>
+      <a class="nav-item" data-nav="projects" onclick="switchNav('projects')">
+        🏃 <span>项目管理</span>
+        <span class="ni-badge" id="projectCountBadge">4</span>
+      </a>
+      <a class="nav-item" data-nav="classes" onclick="switchNav('classes')">
+        📋 <span>班级分配</span>
+      </a>
+      <div class="nav-section" style="margin-top:8px;">其他</div>
+      <a class="nav-item" data-nav="settings" onclick="switchNav('settings')">
+        ⚙️ <span>学校设置</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sf-avatar">👩‍🏫</div>
+      <div class="sf-info">
+        <div class="sf-name">张主任</div>
+        <div class="sf-role">体育教研组组长</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <div class="main-area">
+
+    <!-- TOP BAR -->
+    <header class="top-bar">
+      <div class="tb-left">
+        <span class="tb-title" id="pageTitle">📊 工作台</span>
+        <span class="tb-breadcrumb" id="pageBreadcrumb">项目总览</span>
+      </div>
+      <div class="tb-right">
+        <span class="tb-time" id="liveTime"></span>
+        <span class="tag tag-green">已连接教师端</span>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <div class="content-area" id="contentArea">
+
+      <!-- ===== DASHBOARD ===== -->
+      <div class="page-panel" id="panel-dashboard">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="sc-icon">🏃</div>
+            <div class="sc-val primary" id="statProjects">4</div>
+            <div class="sc-lbl">运动项目总数</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-icon">📚</div>
+            <div class="sc-val accent" id="statUnits">14</div>
+            <div class="sc-lbl">教学单元总数</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-icon">📝</div>
+            <div class="sc-val gold" id="statSessions">25</div>
+            <div class="sc-lbl">课时总数</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-icon">📋</div>
+            <div class="sc-val info" id="statClasses">5</div>
+            <div class="sc-lbl">已分配班级</div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <div class="sh-title">📋 项目总览 <span class="sh-hint">学校教研组预设的运动项目及课时结构</span></div>
+          <button class="btn btn-primary" onclick="openAddProjectModal()">＋ 添加运动项目</button>
+        </div>
+        <div id="projectCardList"></div>
+
+        <div class="add-project-card" onclick="openAddProjectModal()" style="margin-top:4px;">
+          ＋ 添加新的运动项目
+        </div>
+      </div>
+
+      <!-- ===== PROJECTS ===== -->
+      <div class="page-panel" id="panel-projects" style="display:none;">
+        <div class="section-header">
+          <div class="sh-title">🏃 项目管理 <span class="sh-hint">管理学校所有运动项目及其单元、课时</span></div>
+          <button class="btn btn-primary" onclick="openAddProjectModal()">＋ 添加运动项目</button>
+        </div>
+        <div id="projectCardListFull"></div>
+        <div class="add-project-card" onclick="openAddProjectModal()" style="margin-top:4px;">
+          ＋ 添加新的运动项目
+        </div>
+      </div>
+
+      <!-- ===== CLASSES ===== -->
+      <div class="page-panel" id="panel-classes" style="display:none;">
+        <div class="section-header">
+          <div class="sh-title">📋 班级项目分配 <span class="sh-hint">查看各班级已分配的项目和课时（由教师在教师端操作）</span></div>
+        </div>
+        <div style="background:var(--bg-white);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm);border:1px solid var(--border-light);">
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;margin-bottom:12px;">
+            💡 <strong>班级项目分配</strong>由体育老师通过教师端 App 的「今日课程」功能完成。
+            教师操作流程：<strong>选项目 → 勾选单元与课时 → 确认添加</strong>。
+          </div>
+          <div id="classAssignmentGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;"></div>
+        </div>
+      </div>
+
+      <!-- ===== SETTINGS ===== -->
+      <div class="page-panel" id="panel-settings" style="display:none;">
+        <div class="section-header">
+          <div class="sh-title">⚙️ 学校设置</div>
+        </div>
+        <div style="background:var(--bg-white);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-sm);border:1px solid var(--border-light);">
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+            <p>🏫 <strong>学校名称：</strong>上海实验中学</p>
+            <p>📍 <strong>所在地区：</strong>上海市浦东新区</p>
+            <p>👩‍🏫 <strong>教研组负责人：</strong>张主任</p>
+            <p>📅 <strong>当前学期：</strong>2026年春季学期</p>
+            <p style="margin-top:8px;padding:8px 12px;background:rgba(25,118,210,0.05);border-radius:8px;font-size:11px;color:var(--text-tertiary);">
+              ⚠️ 学校基础信息由系统管理员配置，如需修改请联系技术支持。
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- Add/Edit Project Modal -->
+<div class="modal-overlay" id="modalProject">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <span class="mh-title" id="modalProjectTitle">添加运动项目</span>
+      <button class="mh-close" onclick="closeModal('modalProject')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">项目名称 *</label>
+        <input class="form-input" id="inputProjectName" placeholder="例如：仰卧起坐、跳绳、800米跑">
+      </div>
+      <div class="form-group">
+        <label class="form-label">选择图标</label>
+        <div class="icon-option-list" id="projectIconList"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">项目分类</label>
+          <select class="form-select" id="inputProjectCategory">
+            <option value="力量">力量训练</option>
+            <option value="有氧">有氧运动</option>
+            <option value="柔韧">柔韧训练</option>
+            <option value="综合">综合项目</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">计量单位 *</label>
+          <select class="form-select" id="inputProjectMeasure">
+            <option value="个">个（如仰卧起坐、俯卧撑）</option>
+            <option value="米">米（如跑步、跳远）</option>
+            <option value="次">次（如跳绳、立定跳远）</option>
+            <option value="分钟">分钟（如平板支撑）</option>
+            <option value="秒">秒（如冲刺计时）</option>
+          </select>
+          <span class="form-hint">决定了添加课时时"每组数量"的计量单位</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">备注</label>
+        <textarea class="form-textarea" id="inputProjectNote" placeholder="可选：对该项目的补充说明"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalProject')">取消</button>
+      <button class="btn btn-primary" id="btnSaveProject" onclick="saveProject()">确认添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Unit Modal -->
+<div class="modal-overlay" id="modalUnit">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <span class="mh-title" id="modalUnitTitle">添加教学单元</span>
+      <button class="mh-close" onclick="closeModal('modalUnit')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">所属项目</label>
+        <input class="form-input" id="inputUnitProject" disabled style="background:var(--bg-card);color:var(--text-secondary);">
+      </div>
+      <div class="form-group">
+        <label class="form-label">单元名称 *</label>
+        <input class="form-input" id="inputUnitName" placeholder="例如：基础入门、核心强化、进阶考核">
+        <span class="form-hint">建议使用简短清晰的名称，如「基础入门」「技巧提升」</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalUnit')">取消</button>
+      <button class="btn btn-primary" id="btnSaveUnit" onclick="saveUnit()">确认添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Session Modal (v2: with training params) -->
+<div class="modal-overlay" id="modalSession">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <span class="mh-title" id="modalSessionTitle">添加课时</span>
+      <button class="mh-close" onclick="closeModal('modalSession')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">所属单元</label>
+        <input class="form-input" id="inputSessionUnit" disabled style="background:var(--bg-card);color:var(--text-secondary);">
+      </div>
+      <div class="form-group">
+        <label class="form-label">课时名称 *</label>
+        <input class="form-input" id="inputSessionName" placeholder="例如：基础动作入门">
+      </div>
+
+      <!-- Training params section -->
+      <div style="border-top:1px solid var(--border-light);padding-top:4px;margin-top:2px;">
+        <label class="form-label" style="margin-bottom:10px;">🏋️ 训练内容配置</label>
+        <div class="measure-type-info" style="margin-bottom:12px;">
+          <span class="mti-icon">📐</span>
+          <span id="sessionMeasureHint">当前项目计量单位为「个」，每组训练量将以此为单位</span>
+        </div>
+
+        <div class="form-row-3">
+          <div class="form-group">
+            <label class="form-label" id="lblQuantity">每组数量（个）</label>
+            <div class="form-input-unit">
+              <input type="number" id="inputSessionQuantity" placeholder="例如：15" min="1" value="">
+              <span class="fiu-suffix" id="quantityUnit">个</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">训练组数</label>
+            <div class="form-input-unit">
+              <input type="number" id="inputSessionSets" placeholder="例如：3" min="1" value="">
+              <span class="fiu-suffix">组</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">组间休息</label>
+            <div class="form-input-unit">
+              <input type="number" id="inputSessionRest" placeholder="例如：40" min="0" value="">
+              <span class="fiu-suffix">秒</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">课时描述</label>
+        <textarea class="form-textarea" id="inputSessionDesc" placeholder="例如：仰卧起坐标准姿势、呼吸配合"></textarea>
+        <span class="form-hint">补充动作要领、注意事项等文字说明</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalSession')">取消</button>
+      <button class="btn btn-primary" id="btnSaveSession" onclick="saveSession()">确认添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="modalConfirm">
+  <div class="modal-dialog" style="width:380px;">
+    <div class="modal-header">
+      <span class="mh-title">⚠️ 确认删除</span>
+      <button class="mh-close" onclick="closeModal('modalConfirm')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirmMsg" style="font-size:13px;color:var(--text-secondary);line-height:1.7;"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalConfirm')">取消</button>
+      <button class="btn btn-outline btn-danger" id="btnConfirmDelete" style="color:var(--error);border-color:rgba(211,47,47,0.3);">确认删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toastContainer"></div>
+
+<script>
+// ===== DATA STORE =====
+// Project → Units → Sessions structure (v2: measureUnit + training params)
+const MEASURE_LABELS = {
+  '个': '个', '米': '米', '次': '次', '分钟': '分钟', '秒': '秒'
+};
+
+let schoolProjects = [
+  {
+    id: 'p1', icon: '🏋️', name: '仰卧起坐', category: '力量', measureUnit: '个', note: '',
+    units: [
+      { id: 'u1_1', name: '基础入门', sessions: [
+        { id: 's1_1_1', num: 1, name: '基础动作入门', desc: '仰卧起坐标准姿势、呼吸配合', quantity: 15, sets: 2, restInterval: 40 },
+        { id: 's1_1_2', num: 2, name: '呼吸节奏训练', desc: '2拍起·2拍落节奏练习', quantity: 12, sets: 3, restInterval: 30 }
+      ]},
+      { id: 'u1_2', name: '核心强化', sessions: [
+        { id: 's1_2_1', num: 1, name: '耐力基础训练', desc: '匀速仰卧起坐，注意腹部发力', quantity: 20, sets: 3, restInterval: 45 },
+        { id: 's1_2_2', num: 2, name: '核心力量强化', desc: '快速仰卧起坐，强化核心爆发力', quantity: 25, sets: 2, restInterval: 60 }
+      ]},
+      { id: 'u1_3', name: '进阶考核', sessions: [
+        { id: 's1_3_1', num: 1, name: '负重进阶训练', desc: '手持1kg哑铃仰卧起坐', quantity: 15, sets: 2, restInterval: 50 },
+        { id: 's1_3_2', num: 2, name: '单元考核测评', desc: '限时1分钟计数 + 动作评分', quantity: 0, sets: 1, restInterval: 0 }
+      ]}
+    ]
+  },
+  {
+    id: 'p2', icon: '🪢', name: '跳绳', category: '有氧', measureUnit: '次', note: '',
+    units: [
+      { id: 'u2_1', name: '基础入门', sessions: [
+        { id: 's2_1_1', num: 1, name: '基础摇绳', desc: '手腕发力、双脚原地跳', quantity: 50, sets: 3, restInterval: 60 },
+        { id: 's2_1_2', num: 2, name: '单脚交替跳', desc: '左右脚交替跳练习', quantity: 30, sets: 3, restInterval: 45 }
+      ]},
+      { id: 'u2_2', name: '技巧提升', sessions: [
+        { id: 's2_2_1', num: 1, name: '双脚快速跳', desc: '30秒快速计数跳', quantity: 80, sets: 3, restInterval: 90 },
+        { id: 's2_2_2', num: 2, name: '双摇入门', desc: '双摇技巧分解教学', quantity: 20, sets: 4, restInterval: 60 }
+      ]},
+      { id: 'u2_3', name: '考核测评', sessions: [
+        { id: 's2_3_1', num: 1, name: '耐力与考核', desc: '1分钟计数测试 + 花样跳绳', quantity: 0, sets: 1, restInterval: 0 }
+      ]}
+    ]
+  },
+  {
+    id: 'p3', icon: '🏃', name: '800米跑', category: '有氧', measureUnit: '米', note: '',
+    units: [
+      { id: 'u3_1', name: '基础入门', sessions: [
+        { id: 's3_1_1', num: 1, name: '呼吸节奏训练', desc: '腹式呼吸法 + 慢跑适应', quantity: 400, sets: 2, restInterval: 180 }
+      ]},
+      { id: 'u3_2', name: '技术提升', sessions: [
+        { id: 's3_2_1', num: 1, name: '起跑与弯道技术', desc: '起跑姿势 + 弯道身体倾斜', quantity: 200, sets: 3, restInterval: 120 }
+      ]},
+      { id: 'u3_3', name: '耐力训练', sessions: [
+        { id: 's3_3_1', num: 1, name: '间歇跑训练', desc: '中等配速间歇跑', quantity: 400, sets: 2, restInterval: 180 },
+        { id: 's3_3_2', num: 2, name: '计时模拟考核', desc: '800米全程计时跑', quantity: 800, sets: 1, restInterval: 0 }
+      ]}
+    ]
+  },
+  {
+    id: 'p4', icon: '🤸', name: '俯卧撑', category: '力量', measureUnit: '个', note: '',
+    units: [
+      { id: 'u4_1', name: '基础入门', sessions: [
+        { id: 's4_1_1', num: 1, name: '标准俯卧撑', desc: '身体成直线 · 肘部45度', quantity: 10, sets: 3, restInterval: 45 },
+        { id: 's4_1_2', num: 2, name: '宽距俯卧撑', desc: '双手宽于肩 · 胸肌发力', quantity: 8, sets: 3, restInterval: 50 }
+      ]},
+      { id: 'u4_2', name: '变式训练', sessions: [
+        { id: 's4_2_1', num: 1, name: '窄距俯卧撑', desc: '双手靠近 · 肱三头肌发力', quantity: 8, sets: 3, restInterval: 50 },
+        { id: 's4_2_2', num: 2, name: '下降式俯卧撑', desc: '控制下降速度 · 3秒下放', quantity: 6, sets: 4, restInterval: 60 }
+      ]},
+      { id: 'u4_3', name: '综合考核', sessions: [
+        { id: 's4_3_1', num: 1, name: '综合训练', desc: '三种俯卧撑混合循环', quantity: 20, sets: 2, restInterval: 90 },
+        { id: 's4_3_2', num: 2, name: '力量考核', desc: '1分钟限时 + 动作标准评分', quantity: 0, sets: 1, restInterval: 0 }
+      ]}
+    ]
+  }
+];
+
+const classAssignments = [
+  { cls:'初二(3)班', projects:['🏋️ 仰卧起坐'], unit:'核心强化', sessions:'1,2,3,4', status:'授课中' },
+  { cls:'初二(1)班', projects:['🪢 跳绳'], unit:'技巧提升', sessions:'1,2,3', status:'已完成' },
+  { cls:'初二(5)班', projects:['🏋️ 仰卧起坐'], unit:'基础入门', sessions:'1,2', status:'待开始' },
+  { cls:'初一(2)班', projects:['🏃 800米跑'], unit:'耐力训练', sessions:'1,2,3,4', status:'授课中' },
+  { cls:'初一(4)班', projects:['🤸 俯卧撑'], unit:'基础入门', sessions:'1,2,3,4,5', status:'已完成' }
+];
+
+// Modal state
+let modalState = {
+  project: { mode:'add', projectId:null },
+  unit: { mode:'add', projectId:null, unitId:null },
+  session: { mode:'add', projectId:null, unitId:null, sessionId:null },
+  confirm: { type:null, callback:null }
+};
+
+const projectIcons = ['🏋️','🪢','🏃','🤸','🧘','🦘','🏊','🚴','⚽','🏀','🏓','🎯'];
+
+// ===== NAVIGATION =====
+function switchNav(nav) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelector(`[data-nav="${nav}"]`).classList.add('active');
+  document.querySelectorAll('.page-panel').forEach(el => el.style.display = 'none');
+
+  const titles = {
+    dashboard: ['📊 工作台', '项目总览'],
+    projects: ['🏃 项目管理', '运动项目 · 单元 · 课时'],
+    classes: ['📋 班级分配', '班级项目与课时分配情况'],
+    settings: ['⚙️ 学校设置', '学校基本信息']
+  };
+
+  document.getElementById('pageTitle').textContent = titles[nav][0];
+  document.getElementById('pageBreadcrumb').textContent = titles[nav][1];
+
+  if (nav === 'dashboard') {
+    document.getElementById('panel-dashboard').style.display = 'block';
+    renderProjectCards('projectCardList', true);
+    updateStats();
+  } else if (nav === 'projects') {
+    document.getElementById('panel-projects').style.display = 'block';
+    renderProjectCards('projectCardListFull', true);
+  } else if (nav === 'classes') {
+    document.getElementById('panel-classes').style.display = 'block';
+    renderClassAssignments();
+  } else if (nav === 'settings') {
+    document.getElementById('panel-settings').style.display = 'block';
+  }
+}
+
+// ===== STATS =====
+function updateStats() {
+  let totalUnits = 0, totalSessions = 0;
+  schoolProjects.forEach(p => {
+    totalUnits += p.units.length;
+    p.units.forEach(u => { totalSessions += u.sessions.length; });
+  });
+  document.getElementById('statProjects').textContent = schoolProjects.length;
+  document.getElementById('statUnits').textContent = totalUnits;
+  document.getElementById('statSessions').textContent = totalSessions;
+  document.getElementById('projectCountBadge').textContent = schoolProjects.length;
+}
+
+// ===== FORMAT TRAINING PARAMS → DISPLAY STRING =====
+function formatTrainingParams(s, measureUnit) {
+  const parts = [];
+  if (s.quantity > 0) {
+    parts.push(`<span class="sp-chip sp-main">${s.quantity}${measureUnit}/组</span>`);
+  }
+  if (s.sets > 0) {
+    parts.push(`<span class="sp-chip sp-sets">${s.sets}组</span>`);
+  }
+  if (s.restInterval > 0) {
+    parts.push(`<span class="sp-chip sp-rest">休${s.restInterval}秒</span>`);
+  }
+  if (parts.length === 0) {
+    parts.push(`<span class="sp-chip sp-none">自由训练</span>`);
+  }
+  return parts.join('');
+}
+
+// ===== RENDER PROJECT CARDS =====
+function renderProjectCards(containerId, expandedAll) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  let html = '';
+  schoolProjects.forEach((p, pi) => {
+    let totalSessions = 0;
+    p.units.forEach(u => { totalSessions += u.sessions.length; });
+
+    html += `<div class="project-card expanded" id="projectCard_${p.id}">
+      <div class="project-card-header" onclick="toggleProjectCard('${p.id}')">
+        <div class="pch-icon">${p.icon}</div>
+        <div class="pch-info">
+          <div class="pch-name">${p.name}</div>
+          <div class="pch-meta"><span class="tag tag-green">${p.category}</span> · ${p.units.length}个单元 · ${totalSessions}个课时 · 计量「${p.measureUnit}」</div>
+        </div>
+        <div class="pch-stats">
+          <div class="pch-stat"><div class="ps-val">${p.units.length}</div><div class="ps-lbl">单元</div></div>
+          <div class="pch-stat"><div class="ps-val">${totalSessions}</div><div class="ps-lbl">课时</div></div>
+        </div>
+        <div class="pch-actions" onclick="event.stopPropagation()">
+          <button class="btn btn-ghost btn-sm" onclick="openEditProjectModal('${p.id}')" title="编辑项目">✏️</button>
+          <button class="btn btn-ghost btn-sm" style="color:var(--error);" onclick="confirmDeleteProject('${p.id}')" title="删除项目">🗑</button>
+        </div>
+        <span class="pch-expand">▾</span>
+      </div>
+      <div class="project-card-body">
+        <div class="unit-list" id="unitList_${p.id}">`;
+
+    p.units.forEach((u, ui) => {
+      html += `<div class="unit-card">
+        <div class="unit-card-header">
+          <div class="uh-dot"></div>
+          <span class="uh-name">${u.name}</span>
+          <span class="uh-count">${u.sessions.length}个课时</span>
+          <div class="uh-actions">
+            <button class="btn btn-ghost btn-sm" onclick="openAddSessionModal('${p.id}','${u.id}')" title="添加课时">＋ 课时</button>
+            <button class="btn btn-ghost btn-sm" onclick="openEditUnitModal('${p.id}','${u.id}')" title="编辑单元">✏️</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--error);" onclick="confirmDeleteUnit('${p.id}','${u.id}')" title="删除单元">🗑</button>
+          </div>
+        </div>
+        <div class="unit-sessions">`;
+
+      u.sessions.forEach(s => {
+        html += `<div class="session-row">
+          <div class="session-num">${s.num}</div>
+          <div class="session-info">
+            <div class="session-name">${s.name}</div>
+            <div class="session-params">${formatTrainingParams(s, p.measureUnit)}</div>
+            ${s.desc ? `<div class="session-desc">${s.desc}</div>` : ''}
+          </div>
+          <div class="session-actions">
+            <button class="btn btn-ghost btn-sm" onclick="openEditSessionModal('${p.id}','${u.id}','${s.id}')">✏️</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--error);" onclick="confirmDeleteSession('${p.id}','${u.id}','${s.id}')">🗑</button>
+          </div>
+        </div>`;
+      });
+
+      if (u.sessions.length === 0) {
+        html += `<div class="empty-state" style="padding:16px;">
+          <div class="es-desc" style="margin-bottom:8px;">该单元暂无课时</div>
+        </div>`;
+      }
+
+      html += `</div></div>`;
+    });
+
+    html += `</div>
+        <div class="add-inline" onclick="openAddUnitModal('${p.id}')">＋ 添加教学单元</div>
+      </div>
+    </div>`;
+  });
+
+  if (schoolProjects.length === 0) {
+    html = `<div class="empty-state">
+      <div class="es-icon">📭</div>
+      <div class="es-title">还没有添加运动项目</div>
+      <div class="es-desc">点击下方按钮，为学校添加第一个运动项目，然后配置单元和课时</div>
+      <button class="btn btn-primary" onclick="openAddProjectModal()">＋ 添加运动项目</button>
+    </div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function toggleProjectCard(id) {
+  const card = document.getElementById('projectCard_' + id);
+  if (card) card.classList.toggle('expanded');
+}
+
+// ===== RENDER CLASS ASSIGNMENTS =====
+function renderClassAssignments() {
+  const grid = document.getElementById('classAssignmentGrid');
+  if (!grid) return;
+
+  let html = '';
+  classAssignments.forEach(ca => {
+    const statusColors = { '授课中':'tag-green','已完成':'tag-blue','待开始':'tag-gold' };
+    html += `<div style="background:var(--bg-card);border-radius:var(--radius-md);padding:16px;border:1px solid var(--border-light);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:14px;font-weight:700;">${ca.cls}</span>
+        <span class="tag ${statusColors[ca.status] || 'tag-gray'}">${ca.status}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">
+        <div>🏃 项目：${ca.projects.join('、')}</div>
+        <div>📚 单元：${ca.unit}</div>
+        <div>📝 课时编号：${ca.sessions}</div>
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:var(--text-tertiary);">
+        💡 由教师在「今日课程」中完成分配
+      </div>
+    </div>`;
+  });
+
+  grid.innerHTML = html;
+}
+
+// ===== PROJECT MODAL =====
+function openAddProjectModal() {
+  modalState.project = { mode:'add', projectId:null };
+  document.getElementById('modalProjectTitle').textContent = '添加运动项目';
+  document.getElementById('inputProjectName').value = '';
+  document.getElementById('inputProjectCategory').value = '力量';
+  document.getElementById('inputProjectMeasure').value = '个';
+  document.getElementById('inputProjectNote').value = '';
+  document.getElementById('btnSaveProject').textContent = '确认添加';
+  renderIconOptions(null);
+  showModal('modalProject');
+}
+
+function openEditProjectModal(projectId) {
+  const p = schoolProjects.find(p => p.id === projectId);
+  if (!p) return;
+  modalState.project = { mode:'edit', projectId };
+  document.getElementById('modalProjectTitle').textContent = '编辑运动项目';
+  document.getElementById('inputProjectName').value = p.name;
+  document.getElementById('inputProjectCategory').value = p.category;
+  document.getElementById('inputProjectMeasure').value = p.measureUnit || '个';
+  document.getElementById('inputProjectNote').value = p.note;
+  document.getElementById('btnSaveProject').textContent = '保存修改';
+  renderIconOptions(p.icon);
+  showModal('modalProject');
+}
+
+function renderIconOptions(selectedIcon) {
+  const container = document.getElementById('projectIconList');
+  let html = '';
+  projectIcons.forEach(icon => {
+    const sel = icon === selectedIcon ? ' selected' : '';
+    html += `<div class="icon-option${sel}" data-icon="${icon}" onclick="selectProjectIcon(this, '${icon}')">${icon}</div>`;
+  });
+  container.innerHTML = html;
+}
+
+function selectProjectIcon(el, icon) {
+  document.querySelectorAll('#projectIconList .icon-option').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function getSelectedProjectIcon() {
+  const sel = document.querySelector('#projectIconList .icon-option.selected');
+  return sel ? sel.dataset.icon : projectIcons[0];
+}
+
+function saveProject() {
+  const name = document.getElementById('inputProjectName').value.trim();
+  if (!name) { showToast('请输入项目名称', ''); return; }
+  const icon = getSelectedProjectIcon();
+  const category = document.getElementById('inputProjectCategory').value;
+  const measureUnit = document.getElementById('inputProjectMeasure').value;
+  const note = document.getElementById('inputProjectNote').value.trim();
+
+  if (modalState.project.mode === 'add') {
+    const id = 'p' + Date.now();
+    schoolProjects.push({ id, icon, name, category, measureUnit, note, units: [] });
+    showToast('已添加项目「' + name + '」（计量：' + measureUnit + '）', 'success');
+  } else {
+    const p = schoolProjects.find(p => p.id === modalState.project.projectId);
+    if (p) { p.icon = icon; p.name = name; p.category = category; p.measureUnit = measureUnit; p.note = note; }
+    showToast('已更新项目「' + name + '」', 'success');
+  }
+
+  closeModal('modalProject');
+  refreshAll();
+}
+
+// ===== UNIT MODAL =====
+function openAddUnitModal(projectId) {
+  const p = schoolProjects.find(p => p.id === projectId);
+  if (!p) return;
+  modalState.unit = { mode:'add', projectId, unitId:null };
+  document.getElementById('modalUnitTitle').textContent = '添加教学单元';
+  document.getElementById('inputUnitProject').value = p.icon + ' ' + p.name;
+  document.getElementById('inputUnitName').value = '';
+  document.getElementById('btnSaveUnit').textContent = '确认添加';
+  showModal('modalUnit');
+}
+
+function openEditUnitModal(projectId, unitId) {
+  const p = schoolProjects.find(p => p.id === projectId);
+  if (!p) return;
+  const u = p.units.find(u => u.id === unitId);
+  if (!u) return;
+  modalState.unit = { mode:'edit', projectId, unitId };
+  document.getElementById('modalUnitTitle').textContent = '编辑教学单元';
+  document.getElementById('inputUnitProject').value = p.icon + ' ' + p.name;
+  document.getElementById('inputUnitName').value = u.name;
+  document.getElementById('btnSaveUnit').textContent = '保存修改';
+  showModal('modalUnit');
+}
+
+function saveUnit() {
+  const name = document.getElementById('inputUnitName').value.trim();
+  if (!name) { showToast('请输入单元名称', ''); return; }
+
+  const p = schoolProjects.find(p => p.id === modalState.unit.projectId);
+  if (!p) return;
+
+  if (modalState.unit.mode === 'add') {
+    const id = 'u' + Date.now();
+    p.units.push({ id, name, sessions: [] });
+    showToast('已添加单元「' + name + '」', 'success');
+  } else {
+    const u = p.units.find(u => u.id === modalState.unit.unitId);
+    if (u) { u.name = name; }
+    showToast('已更新单元「' + name + '」', 'success');
+  }
+
+  closeModal('modalUnit');
+  refreshAll();
+}
+
+// ===== SESSION MODAL (v2: with training params) =====
+function getProjectById(projectId) {
+  return schoolProjects.find(p => p.id === projectId) || null;
+}
+
+function updateSessionMeasureUI(measureUnit) {
+  const unitLabels = {
+    '个': '每组数量（个）', '米': '每组数量（米）', '次': '每组数量（次）',
+    '分钟': '每组时长（分钟）', '秒': '每组时长（秒）'
+  };
+  document.getElementById('lblQuantity').textContent = unitLabels[measureUnit] || '每组数量';
+  document.getElementById('quantityUnit').textContent = measureUnit;
+  document.getElementById('sessionMeasureHint').textContent =
+    '当前项目计量单位为「' + measureUnit + '」，每组训练量以此为单位';
+}
+
+function openAddSessionModal(projectId, unitId) {
+  const p = getProjectById(projectId);
+  if (!p) return;
+  const u = p.units.find(u => u.id === unitId);
+  if (!u) return;
+  modalState.session = { mode:'add', projectId, unitId, sessionId:null };
+  document.getElementById('modalSessionTitle').textContent = '添加课时';
+  document.getElementById('inputSessionUnit').value = p.name + ' · ' + u.name;
+  document.getElementById('inputSessionName').value = '';
+  document.getElementById('inputSessionDesc').value = '';
+  document.getElementById('inputSessionQuantity').value = '';
+  document.getElementById('inputSessionSets').value = '';
+  document.getElementById('inputSessionRest').value = '';
+  document.getElementById('btnSaveSession').textContent = '确认添加';
+  updateSessionMeasureUI(p.measureUnit);
+  showModal('modalSession');
+  setTimeout(() => { document.getElementById('inputSessionName').focus(); }, 100);
+}
+
+function openEditSessionModal(projectId, unitId, sessionId) {
+  const p = getProjectById(projectId);
+  if (!p) return;
+  const u = p.units.find(u => u.id === unitId);
+  if (!u) return;
+  const s = u.sessions.find(s => s.id === sessionId);
+  if (!s) return;
+  modalState.session = { mode:'edit', projectId, unitId, sessionId };
+  document.getElementById('modalSessionTitle').textContent = '编辑课时';
+  document.getElementById('inputSessionUnit').value = p.name + ' · ' + u.name;
+  document.getElementById('inputSessionName').value = s.name;
+  document.getElementById('inputSessionDesc').value = s.desc || '';
+  document.getElementById('inputSessionQuantity').value = s.quantity || '';
+  document.getElementById('inputSessionSets').value = s.sets || '';
+  document.getElementById('inputSessionRest').value = s.restInterval || '';
+  document.getElementById('btnSaveSession').textContent = '保存修改';
+  updateSessionMeasureUI(p.measureUnit);
+  showModal('modalSession');
+}
+
+function saveSession() {
+  const name = document.getElementById('inputSessionName').value.trim();
+  if (!name) { showToast('请输入课时名称', ''); return; }
+  const desc = document.getElementById('inputSessionDesc').value.trim();
+  const quantity = parseInt(document.getElementById('inputSessionQuantity').value) || 0;
+  const sets = parseInt(document.getElementById('inputSessionSets').value) || 0;
+  const restInterval = parseInt(document.getElementById('inputSessionRest').value) || 0;
+
+  const p = getProjectById(modalState.session.projectId);
+  if (!p) return;
+  const u = p.units.find(u => u.id === modalState.session.unitId);
+  if (!u) return;
+
+  if (modalState.session.mode === 'add') {
+    const id = 's' + Date.now();
+    const num = u.sessions.length + 1;
+    u.sessions.push({ id, num, name, desc, quantity, sets, restInterval });
+    showToast('已添加课时「' + name + '」', 'success');
+  } else {
+    const s = u.sessions.find(s => s.id === modalState.session.sessionId);
+    if (s) { s.name = name; s.desc = desc; s.quantity = quantity; s.sets = sets; s.restInterval = restInterval; }
+    showToast('已更新课时「' + name + '」', 'success');
+  }
+
+  closeModal('modalSession');
+  refreshAll();
+}
+
+// ===== DELETE CONFIRMATIONS =====
+function confirmDeleteProject(projectId) {
+  const p = schoolProjects.find(p => p.id === projectId);
+  if (!p) return;
+  let totalSessions = 0; p.units.forEach(u => { totalSessions += u.sessions.length; });
+  document.getElementById('confirmMsg').innerHTML =
+    `确定要删除项目「<strong>${p.icon} ${p.name}</strong>」吗？<br><br>
+    <span style="color:var(--error);font-size:12px;">⚠️ 将同时删除 ${p.units.length} 个单元、${totalSessions} 个课时，该操作不可撤销。</span>`;
+  modalState.confirm = { type:'project', projectId };
+  showModal('modalConfirm');
+}
+
+function confirmDeleteUnit(projectId, unitId) {
+  const p = schoolProjects.find(p => p.id === projectId);
+  if (!p) return;
+  const u = p.units.find(u => u.id === unitId);
+  if (!u) return;
+  document.getElementById('confirmMsg').innerHTML =
+    `确定要删除「<strong>${p.name}</strong>」下的单元「<strong>${u.name}</strong>」吗？<br><br>
+    <span style="color:var(--error);font-size:12px;">⚠️ 将同时删除该单元下的 ${u.sessions.length} 个课时，该操作不可撤销。</span>`;
+  modalState.confirm = { type:'unit', projectId, unitId };
+  showModal('modalConfirm');
+}
+
+function confirmDeleteSession(projectId, unitId, sessionId) {
+  const p = schoolProjects.find(p => p.id === projectId);
+  if (!p) return;
+  const u = p.units.find(u => u.id === unitId);
+  if (!u) return;
+  const s = u.sessions.find(s => s.id === sessionId);
+  if (!s) return;
+  document.getElementById('confirmMsg').innerHTML =
+    `确定要删除课时「<strong>课时${s.num}：${s.name}</strong>」吗？<br>
+    <span style="color:var(--text-tertiary);font-size:11px;">${p.name} · ${u.name}</span>`;
+  modalState.confirm = { type:'session', projectId, unitId, sessionId };
+  showModal('modalConfirm');
+}
+
+function executeDelete() {
+  const c = modalState.confirm;
+  if (c.type === 'project') {
+    schoolProjects = schoolProjects.filter(p => p.id !== c.projectId);
+    showToast('已删除项目', 'success');
+  } else if (c.type === 'unit') {
+    const p = schoolProjects.find(p => p.id === c.projectId);
+    if (p) { p.units = p.units.filter(u => u.id !== c.unitId); }
+    showToast('已删除单元', 'success');
+  } else if (c.type === 'session') {
+    const p = schoolProjects.find(p => p.id === c.projectId);
+    if (p) {
+      const u = p.units.find(u => u.id === c.unitId);
+      if (u) {
+        u.sessions = u.sessions.filter(s => s.id !== c.sessionId);
+        u.sessions.forEach((s, i) => { s.num = i + 1; });
+      }
+    }
+    showToast('已删除课时', 'success');
+  }
+  closeModal('modalConfirm');
+  modalState.confirm = { type:null, callback:null };
+  refreshAll();
+}
+
+// ===== MODAL HELPERS =====
+function showModal(id) {
+  document.getElementById(id).classList.add('show');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('show');
+  });
+});
+
+document.getElementById('btnConfirmDelete').addEventListener('click', executeDelete);
+
+// ===== TOAST =====
+function showToast(msg, type) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + (type || '');
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; }, 2000);
+  setTimeout(() => { toast.remove(); }, 2500);
+}
+
+// ===== REFRESH =====
+function refreshAll() {
+  updateStats();
+  const currentNav = document.querySelector('.nav-item.active');
+  const navId = currentNav ? currentNav.dataset.nav : 'dashboard';
+  if (navId === 'dashboard') {
+    renderProjectCards('projectCardList', true);
+  } else if (navId === 'projects') {
+    renderProjectCards('projectCardListFull', true);
+  } else if (navId === 'classes') {
+    renderClassAssignments();
+  }
+}
+
+// ===== LIVE TIME =====
+function updateTime() {
+  const now = new Date();
+  const str = now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日 ' +
+    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('liveTime').textContent = str;
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+// ===== INIT =====
+refreshAll();
+
+console.log('✅ 学校管理后台 v2.0 已就绪');
+console.log('🏫 上海实验中学 · 体育教研组');
+console.log('📊 功能：项目管理 | 单元配置 | 课时预设（含训练量/组数/间隔） | 班级分配查看');
+console.log('🔗 数据联动：教师端「今日课程」选项目课时 → 学生端 S3b 课堂训练');
+console.log('🆕 v2.0：课时支持结构化训练参数 - 数量/组数/组间休息，按项目类型自动切换计量单位');
+</script>
+
+</body>
+</html>
